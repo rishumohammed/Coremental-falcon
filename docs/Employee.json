@@ -1,0 +1,50 @@
+Employee List
+
+Response
+{
+    "status": "status",
+    "employees": [
+        {
+            "id": 1,
+            "isLocked": true,
+            "name": "name",
+            "personId": "sdjfhehewubhfuhueiwbh6565rge",
+            "faceIds": [
+                "deafghsafhj",
+                "sdfhdhf",
+                "sdehfggf"
+            ]
+        },
+        {
+            "id": 1,
+            "isLocked": false,
+            "name": "name",
+            "personId": "sdjfhehewubhfuhueiwbh6565rge",
+            "faceIds": [
+                "deafghsafhj",
+                "sdfhdhf",
+                "sdehfggf"
+            ]
+        },
+        {
+            "id": 1,
+            "name": "name",
+            "personId": "sdjfhehewubhfuhueiwbh6565rge",
+            "faceIds": [
+                "deafghsafhj",
+                "sdfhdhf",
+                "sdehfggf"
+            ]
+        },
+        {
+            "id": 1,
+            "name": "name",
+            "personId": "sdjfhehewubhfuhueiwbh6565rge",
+            "faceIds": [
+                "deafghsafhj",
+                "sdfhdhf",
+                "sdehfggf"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+create groupId
+
+Req
+{
+    "token": "dfhdkjhfhj",
+    "groupId": "hsgdh-dfhuj=ed-dsgfjdgfj-54dff"
+}
+
+Res
+
+{
+    "message": "groupId inserted"
+}

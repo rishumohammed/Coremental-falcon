@@ -1,0 +1,14 @@
+version
+
+
+Request
+{"token":"ahfJHb63ty545"}
+
+
+
+Response
+{
+    "version": 10,
+    "supportingVersion": 5,
+    "message": "please update app"
+}
