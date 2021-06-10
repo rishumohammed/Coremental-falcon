@@ -80,7 +80,8 @@ class UserController extends \App\Http\Controllers\Controller
             'location' => ['nullable'],
             'geo_location' => ['nullable', 'regex:/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?),[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$row->id],            
-            'password' => ['nullable', 'string', 'min:8', 'confirmed']
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'is_locked' => 'in:0,1'
         ];
 
         if($employee->type == 'salesman')

@@ -112,6 +112,35 @@
                             <div class="col-md-4">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" 
+                                    value="0"
+                                    name="is_locked" id="is_locked_0" 
+                                    {{ old('is_locked', $row->is_locked) == 0 ? 'checked' : '' }} />
+
+                                    <label class="form-check-label" for="is_locked_0">
+                                        {{ __('Open') }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_locked" 
+                                    value="1"
+                                    id="is_locked_1" 
+                                    {{ old('is_locked', $row->is_locked) == 1 ? 'checked' : '' }} />
+
+                                    <label class="form-check-label" for="is_locked_1">
+                                        {{ __('Locked') }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-md-4">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" 
                                     value="general"
                                     name="type" id="type_general" 
                                     {{ old('type', $row->type) == 'general' ? 'checked' : '' }} 

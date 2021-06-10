@@ -45,7 +45,7 @@ class EmployeeController extends \App\Http\Controllers\Controller
 
     public function addFaceId(Employee $row, Request $req)
     {
-        if(\Auth::user()->is_locked)
+        if($row->is_locked)
         {
             return response()->json([
                 'message'=>'You can not add one more face id. Maximum face ids reached'
