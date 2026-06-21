@@ -48,6 +48,96 @@
                         </div>
 
                         <div class="form-group row">
+                            <label for="department_id" class="col-md-4 col-form-label text-md-right">{{ __('Department') }}</label>
+
+                            <div class="col-md-6">
+                                <select id="department_id" name="department_id" class="form-control @error('department_id') is-invalid @enderror">
+                                    <option value="">-- Select Department --</option>
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+
+                                @error('department_id')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="designation_id" class="col-md-4 col-form-label text-md-right">{{ __('Designation') }}</label>
+
+                            <div class="col-md-6">
+                                <select id="designation_id" name="designation_id" class="form-control @error('designation_id') is-invalid @enderror">
+                                    <option value="">-- Select Designation --</option>
+                                    @foreach($designations as $desig)
+                                        <option value="{{ $desig->id }}" {{ old('designation_id') == $desig->id ? 'selected' : '' }}>{{ $desig->name }}</option>
+                                    @endforeach
+                                </select>
+
+                                @error('designation_id')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="shift_id" class="col-md-4 col-form-label text-md-right">{{ __('Shift Type') }}</label>
+
+                            <div class="col-md-6">
+                                <select id="shift_id" name="shift_id" class="form-control @error('shift_id') is-invalid @enderror">
+                                    <option value="">-- Select Shift --</option>
+                                    @foreach($shifts as $shift)
+                                        <option value="{{ $shift->id }}" {{ old('shift_id') == $shift->id ? 'selected' : '' }}>{{ $shift->name }}</option>
+                                    @endforeach
+                                </select>
+
+                                @error('shift_id')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="location_id" class="col-md-4 col-form-label text-md-right">{{ __('Location') }}</label>
+
+                            <div class="col-md-6">
+                                <select id="location_id" name="location_id" class="form-control @error('location_id') is-invalid @enderror">
+                                    <option value="">-- Select Location --</option>
+                                    @foreach($locations as $loc)
+                                        <option value="{{ $loc->id }}" {{ old('location_id') == $loc->id ? 'selected' : '' }}>{{ $loc->name }}</option>
+                                    @endforeach
+                                </select>
+
+                                @error('location_id')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="id_number" class="col-md-4 col-form-label text-md-right">{{ __('ID Number') }}</label>
+
+                            <div class="col-md-6">
+                                <input id="id_number" type="text" class="form-control @error('id_number') is-invalid @enderror" name="id_number" value="{{ old('id_number') }}" autocomplete="id_number" placeholder="National ID, Passport, etc.">
+
+                                @error('id_number')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
                             <div class="col-md-4">
                             </div>
                             <div class="col-md-4">

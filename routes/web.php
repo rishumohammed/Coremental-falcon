@@ -36,6 +36,10 @@ Route::group([
         Route::post('/edit/{row}', 'EmployeeController@update');
         Route::get('/delete/{row}', 'EmployeeController@delete');
 
+        Route::get('/{row}/blocks', 'EmployeeController@blocks');
+        Route::post('/{row}/blocks', 'EmployeeController@storeBlock');
+        Route::get('/blocks/delete/{block}', 'EmployeeController@deleteBlock');
+
         Route::get('/attendance', 'EmployeeController@attendance');
     }); 
     
@@ -64,8 +68,86 @@ Route::group([
         'prefix'=>'settings'
     ], function(){
         Route::get('/', 'SettingController@index');        
-        Route::post('/', 'SettingController@update');
+        Route::get('/general', 'SettingController@general');        
+        Route::post('/general', 'SettingController@update');
+        Route::post('/clear-excel-cache', 'SettingController@clearExcelCache');
+
+        Route::get('/weekend', 'SettingController@weekend');
+        Route::post('/weekend', 'SettingController@updateWeekend');
+
+        Route::get('/holidays', 'SettingController@holidays');
+        Route::post('/holidays', 'SettingController@storeHoliday');
+        Route::get('/holidays/delete/{id}', 'SettingController@deleteHoliday');
+        Route::get('/holidays/restore/{id}', 'SettingController@restoreHoliday');
+        Route::get('/holidays/force-delete/{id}', 'SettingController@forceDeleteHoliday');
     }); 
+
+    Route::group([
+        'prefix'=>'leave-types'
+    ], function(){
+        Route::get('/', 'LeaveTypeController@index');        
+        Route::get('/create', 'LeaveTypeController@create');        
+        Route::post('/create', 'LeaveTypeController@store');        
+        Route::get('/edit/{leaveType}', 'LeaveTypeController@edit');        
+        Route::post('/edit/{leaveType}', 'LeaveTypeController@update');        
+        Route::get('/delete/{leaveType}', 'LeaveTypeController@delete');        
+        Route::get('/set-default/{leaveType}', 'LeaveTypeController@setDefault');        
+    }); 
+
+    Route::group([
+        'prefix'=>'departments'
+    ], function(){
+        Route::get('/', 'DepartmentController@index');        
+        Route::get('/create', 'DepartmentController@create');        
+        Route::post('/create', 'DepartmentController@store');        
+        Route::get('/edit/{department}', 'DepartmentController@edit');        
+        Route::post('/edit/{department}', 'DepartmentController@update');        
+        Route::get('/delete/{department}', 'DepartmentController@delete');        
+    }); 
+
+    Route::group([
+        'prefix'=>'designations'
+    ], function(){
+        Route::get('/', 'DesignationController@index');        
+        Route::get('/create', 'DesignationController@create');        
+        Route::post('/create', 'DesignationController@store');        
+        Route::get('/edit/{designation}', 'DesignationController@edit');        
+        Route::post('/edit/{designation}', 'DesignationController@update');        
+        Route::get('/delete/{designation}', 'DesignationController@delete');        
+    }); 
+
+    Route::group([
+        'prefix'=>'shifts'
+    ], function(){
+        Route::get('/', 'ShiftController@index');        
+        Route::get('/create', 'ShiftController@create');        
+        Route::post('/create', 'ShiftController@store');        
+        Route::get('/edit/{shift}', 'ShiftController@edit');        
+        Route::post('/edit/{shift}', 'ShiftController@update');        
+        Route::get('/delete/{shift}', 'ShiftController@delete');        
+    }); 
+
+    Route::group([
+        'prefix'=>'locations'
+    ], function(){
+        Route::get('/', 'LocationController@index');        
+        Route::get('/create', 'LocationController@create');        
+        Route::post('/create', 'LocationController@store');        
+        Route::get('/edit/{location}', 'LocationController@edit');        
+        Route::post('/edit/{location}', 'LocationController@update');        
+        Route::get('/delete/{location}', 'LocationController@delete');        
+    }); 
+
+    Route::group([
+        'prefix'=>'reports'
+    ], function(){
+        Route::get('/working-hours', 'ReportController@workingHours');
+        Route::get('/absent', 'ReportController@absent');
+        Route::get('/leaves', 'ReportController@leaves');
+        Route::get('/missing-checkouts', 'ReportController@missingCheckouts');
+        Route::post('/manual-checkout', 'ReportController@addManualCheckout');
+        Route::post('/assign-leave', 'ReportController@assignLeave');
+    });
 
 });
 
@@ -81,5 +163,9 @@ Route::get('/install5432', function(){
     //\Artisan::call('passport:keys');
     //\Artisan::call('passport:client', [
     //    '--password' => true
-     //]);
+    //]);
+    \Artisan::call('migrate', ['--path'=>'database/migrations/2026_06_19_100000_create_holidays_table.php']);
+    \Artisan::call('migrate', ['--path'=>'database/migrations/2026_06_19_100001_add_weekend_days_to_settings.php']);
+    \Artisan::call('migrate', ['--path'=>'database/migrations/2026_06_19_110000_add_soft_deletes_to_holidays_table.php']);
+    echo "Done.";
 });

@@ -1,5 +1,6 @@
 <?php
 
+namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\User;
 
@@ -14,9 +15,9 @@ class UserSeeder extends Seeder
     {
         User::create([
             'type'=>'admin',
-            'name'=>'Coremetal Admin',
-            'username'=>'admin',
-            'password'=>bcrypt('admin#CoreMetal')
+            'name'=>'Super Admin',
+            'username'=>'superadmin',
+            'password'=>bcrypt('Superadmin@123')
         ]);
     }
 }

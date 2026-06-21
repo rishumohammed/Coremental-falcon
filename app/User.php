@@ -70,6 +70,6 @@ class User extends Authenticatable
 
     function getGroupIdAttribute()
     {
-        return '2f38223b-e9cf-492b-af32-ebf5b442f349';
+        return 'f56cd35d-7d89-4eea-8e18-9d11a59e14f8';
     }
 }

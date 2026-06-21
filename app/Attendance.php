@@ -8,6 +8,10 @@ class Attendance extends Model
 {
     protected $guarded = ['id'];
 
+    function user()
+    {
+        return $this->belongsTo('App\User');
+    }
     function employee()
     {
         return $this->belongsTo('App\Employee');

@@ -15,10 +15,31 @@ class UserController extends \App\Http\Controllers\Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
+    public function index(Request $req)
     {
-        $rows = User::where('type', '!=', 'admin')->paginate(50);
-        return view('admin.users.index', compact('rows'));
+        $rows = User::where('type', '!=', 'admin');
+        
+        if ($req->search) {
+            $rows->where(function($q) use ($req) {
+                $q->where('name', 'like', "%{$req->search}%")
+                  ->orWhere('username', 'like', "%{$req->search}%");
+            });
+        }
+        
+        if ($req->role) {
+            $rows->where('type', $req->role);
+        }
+        
+        if ($req->location) {
+            $rows->where('location', 'like', "%{$req->location}%");
+        }
+        
+        $rows = $rows->paginate(50);
+        
+        $roles = User::where('type', '!=', 'admin')->distinct()->pluck('type');
+        $locations = User::where('type', '!=', 'admin')->whereNotNull('location')->where('location', '!=', '')->distinct()->pluck('location');
+        
+        return view('admin.users.index', compact('rows', 'roles', 'locations'));
     }
 
     public function create()
@@ -84,7 +105,7 @@ class UserController extends \App\Http\Controllers\Controller
             'is_locked' => 'in:0,1'
         ];
 
-        if($employee->type == 'salesman')
+        if($employee && $employee->type == 'salesman')
         {
             $rules['employee_id'] = ['required', 'unique:employees,employee_id,'.$employee->id];
         }
@@ -126,7 +147,7 @@ class UserController extends \App\Http\Controllers\Controller
     }
 
 
-    public function assignedEmployees(User $row)
+    public function assignedEmployees(Request $req, User $row)
     {
         $unassigned_employees = Employee::whereNotIn('id', function($qry)
                                     use($row){
@@ -135,7 +156,16 @@ class UserController extends \App\Http\Controllers\Controller
                                         ->where('user_id', $row->id);
                                 })->get();
         $user = $row;
-        $rows = $row->employees()->paginate(50);
+        
+        $rows = $row->employees();
+        if ($req->search) {
+            $rows->where(function($q) use ($req) {
+                $q->where('name', 'like', "%{$req->search}%")
+                  ->orWhere('employee_id', 'like', "%{$req->search}%");
+            });
+        }
+        $rows = $rows->paginate(50);
+        
         return view('admin.users.assigned-employees.index', compact('user', 'rows',  'unassigned_employees'));
     }
 

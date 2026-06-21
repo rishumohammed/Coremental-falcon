@@ -23,6 +23,23 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        if (auth()->user()->type == 'admin') {
+            return redirect('/admin');
+        }
+
+        return view('home', [
+            'metrics' => [
+                'total_employees' => 0,
+                'total_users' => 0,
+                'today_employee_attendance' => 0,
+                'today_salesman_attendance' => 0,
+                'present_today' => 0,
+                'absent_today' => 0,
+                'missing_checkouts_yesterday' => 0,
+            ],
+            'attendanceTrend' => [],
+            'departmentDistribution' => [],
+            'latestMissingCheckouts' => []
+        ]);
     }
 }

@@ -148,6 +148,30 @@ class EmployeeController extends \App\Http\Controllers\Controller
             ], 422);
         }
 
+        $isBlocked = \App\EmployeeBlock::where('employee_id', $employee->id)
+            ->whereDate('start_date', '<=', today())
+            ->whereDate('end_date', '>=', today())
+            ->first();
+
+        if ($isBlocked) {
+            return response()->json([
+                'message' => 'Contact admin, you are temporarily blocked.',
+                'errors' => []
+            ], 422);
+        }
+
+        $isBlocked = \App\EmployeeBlock::where('employee_id', $employee->id)
+            ->whereDate('start_date', '<=', today())
+            ->whereDate('end_date', '>=', today())
+            ->first();
+
+        if ($isBlocked) {
+            return response()->json([
+                'message' => 'Contact admin, you are temporarily blocked.',
+                'errors' => []
+            ], 422);
+        }
+
         $last_entry = Attendance::where('employee_id', $employee->id)->latest()->first();
 
         if($last_entry  && $last_entry->type == 0)
@@ -172,7 +196,8 @@ class EmployeeController extends \App\Http\Controllers\Controller
             'lat'=>$data['lat'],
             'lng'=>$data['lng'],
             'address'=>$data['address'],
-            'device'=>$data['device']
+            'device'=>$data['device'],
+            'user_id'=>\Auth::user()->id
         ];
 
         if(isset($data['photo']))
@@ -258,7 +283,8 @@ class EmployeeController extends \App\Http\Controllers\Controller
             'lat'=>$data['lat'],
             'lng'=>$data['lng'],
             'address'=>$data['address'],
-            'device'=>$data['device']
+            'device'=>$data['device'],
+            'user_id'=>\Auth::user()->id
         ];
 
         if(isset($data['photo']))
