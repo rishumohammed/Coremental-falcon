@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="container-fluid pt-2">
+        <div class="d-flex align-items-center mb-3">
+        <a href="{{ url('admin/departments') }}" class="btn btn-light border mr-3 px-3" title="Back to Departments">
+            <i class="fas fa-arrow-left text-secondary"></i>
+        </a>
+        <h5 class="mb-0 text-dark font-weight-bold">Edit Department</h5>
+    </div>
     <div class="row">
         <div class="col-md-6">
             <div class="card-white p-4">
@@ -26,3 +32,4 @@
     </div>
 </div>
 @endsection
+

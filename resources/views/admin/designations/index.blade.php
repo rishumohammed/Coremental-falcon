@@ -18,7 +18,7 @@
             </a>
             <h5 class="mb-0 text-dark font-weight-bold">Designations</h5>
         </div>
-        <a href="{{ url('admin/Designations/create') }}" class="btn ui-btn ui-btn-primary">
+        <a href="{{ url('admin/designations/create') }}" class="btn ui-btn ui-btn-primary">
             <i class="fas fa-plus mr-1"></i> Add Designation
         </a>
     </div>
@@ -38,10 +38,10 @@
                         <td class="font-weight-bold text-dark align-middle">{{$row->name}}</td>
                         <td>
                             <div class="d-flex justify-content-center align-items-center">
-                                <a href="{{ url('admin/Designations/edit/'.$row->id) }}" class="btn btn-sm btn-light border mr-2" title="Edit">
+                                <a href="{{ url('admin/designations/edit/'.$row->id) }}" class="btn btn-sm btn-light border mr-2" title="Edit">
                                     <i class="fas fa-edit text-primary"></i>
                                 </a>
-                                <a href="{{ url('admin/Designations/delete/'.$row->id) }}" class="btn btn-sm btn-light border" title="Delete" onclick="return confirm('Are you sure you want to delete this Designation?')">
+                                <a href="{{ url('admin/designations/delete/'.$row->id) }}" class="btn btn-sm btn-light border" title="Delete" onclick="return confirm('Are you sure you want to delete this Designation?')">
                                     <i class="fas fa-trash text-danger"></i>
                                 </a>
                             </div>

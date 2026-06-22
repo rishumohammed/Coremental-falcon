@@ -18,7 +18,7 @@
             </a>
             <h5 class="mb-0 text-dark font-weight-bold">Shifts</h5>
         </div>
-        <a href="{{ url('admin/Shifts/create') }}" class="btn ui-btn ui-btn-primary">
+        <a href="{{ url('admin/shifts/create') }}" class="btn ui-btn ui-btn-primary">
             <i class="fas fa-plus mr-1"></i> Add Shift
         </a>
     </div>
@@ -38,10 +38,10 @@
                         <td class="font-weight-bold text-dark align-middle">{{$row->name}}</td>
                         <td>
                             <div class="d-flex justify-content-center align-items-center">
-                                <a href="{{ url('admin/Shifts/edit/'.$row->id) }}" class="btn btn-sm btn-light border mr-2" title="Edit">
+                                <a href="{{ url('admin/shifts/edit/'.$row->id) }}" class="btn btn-sm btn-light border mr-2" title="Edit">
                                     <i class="fas fa-edit text-primary"></i>
                                 </a>
-                                <a href="{{ url('admin/Shifts/delete/'.$row->id) }}" class="btn btn-sm btn-light border" title="Delete" onclick="return confirm('Are you sure you want to delete this Shift?')">
+                                <a href="{{ url('admin/shifts/delete/'.$row->id) }}" class="btn btn-sm btn-light border" title="Delete" onclick="return confirm('Are you sure you want to delete this Shift?')">
                                     <i class="fas fa-trash text-danger"></i>
                                 </a>
                             </div>

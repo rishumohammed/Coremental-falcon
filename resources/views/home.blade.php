@@ -165,7 +165,7 @@
 
         <!-- Quick Actions -->
         <div class="col-md-4 mb-4">
-            <div class="card-white p-4 h-100">
+            <div class="card-white p-4">
                 <h5 class="font-weight-bold text-dark mb-4">Quick Actions</h5>
                 
                 <a href="{{ url('admin/employees/create') }}" class="btn ui-btn btn-light w-100 mb-3 text-left d-flex align-items-center">

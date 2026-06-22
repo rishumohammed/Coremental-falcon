@@ -4,10 +4,16 @@
 
 @section('content')
 <div class="container-fluid pt-2">
+        <div class="d-flex align-items-center mb-3">
+        <a href="{{ url('admin/shifts') }}" class="btn btn-light border mr-3 px-3" title="Back to Shifts">
+            <i class="fas fa-arrow-left text-secondary"></i>
+        </a>
+        <h5 class="mb-0 text-dark font-weight-bold">Add Shift</h5>
+    </div>
     <div class="row">
         <div class="col-md-6">
             <div class="card-white p-4">
-                <form action="{{ url('admin/Shifts/create') }}" method="POST">
+                <form action="{{ url('admin/shifts/create') }}" method="POST">
                     @csrf
                     <div class="form-group mb-4">
                         <label class="font-weight-bold text-dark">Shift Name</label>
@@ -19,10 +25,11 @@
                     <button type="submit" class="btn ui-btn ui-btn-primary px-4">
                         <i class="fas fa-save mr-1"></i> Save
                     </button>
-                    <a href="{{ url('admin/Shifts') }}" class="btn ui-btn btn-light border ml-2">Cancel</a>
+                    <a href="{{ url('admin/shifts') }}" class="btn ui-btn btn-light border ml-2">Cancel</a>
                 </form>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
