@@ -16,7 +16,7 @@ class EmployeeController extends \App\Http\Controllers\Controller
      */
     public function index(Request $req)
     {
-        $rows = Employee::query()->with('department');
+        $rows = Employee::query()->with(['department', 'division', 'designation', 'shift', 'location']);
         
         if ($req->search) {
             $rows->where(function($q) use ($req) {
@@ -36,20 +36,41 @@ class EmployeeController extends \App\Http\Controllers\Controller
         if ($req->has('department_id') && $req->department_id != '') {
             $rows->where('department_id', $req->department_id);
         }
+
+        if ($req->has('division_id') && $req->division_id != '') {
+            $rows->where('division_id', $req->division_id);
+        }
         
+        if ($req->has('designation_id') && $req->designation_id != '') {
+            $rows->where('designation_id', $req->designation_id);
+        }
+        
+        if ($req->has('shift_id') && $req->shift_id != '') {
+            $rows->where('shift_id', $req->shift_id);
+        }
+        
+        if ($req->has('location_id') && $req->location_id != '') {
+            $rows->where('location_id', $req->location_id);
+        }
+
         $rows = $rows->paginate(50);
-        $departments = \App\Department::all();
+        $departments = \Cache::rememberForever('departments', fn() => \App\Department::all());
+        $divisions = \Cache::rememberForever('divisions', fn() => \App\Division::all());
+        $designations = \Cache::rememberForever('designations', fn() => \App\Designation::all());
+        $shifts = \Cache::rememberForever('shifts', fn() => \App\Shift::all());
+        $locations = \Cache::rememberForever('locations', fn() => \App\Location::all());
         $allEmployees = Employee::all(['id', 'name', 'employee_id']);
-        return view('admin.employees.index', compact('rows', 'departments', 'allEmployees'));
+        return view('admin.employees.index', compact('rows', 'departments', 'divisions', 'designations', 'shifts', 'locations', 'allEmployees'));
     }
 
     public function create()
     {
-        $departments = \App\Department::all();
-        $designations = \App\Designation::all();
-        $shifts = \App\Shift::all();
-        $locations = \App\Location::all();
-        return view('admin.employees.create', compact('departments', 'designations', 'shifts', 'locations'));
+        $departments = \Cache::rememberForever('departments', fn() => \App\Department::all());
+        $designations = \Cache::rememberForever('designations', fn() => \App\Designation::all());
+        $shifts = \Cache::rememberForever('shifts', fn() => \App\Shift::all());
+        $locations = \Cache::rememberForever('locations', fn() => \App\Location::all());
+        $divisions = \Cache::rememberForever('divisions', fn() => \App\Division::all());
+        return view('admin.employees.create', compact('departments', 'designations', 'shifts', 'locations', 'divisions'));
     }
 
     public function store(Request $req)
@@ -61,9 +82,18 @@ class EmployeeController extends \App\Http\Controllers\Controller
             'designation_id' => ['nullable', 'exists:designations,id'],
             'shift_id' => ['nullable', 'exists:shifts,id'],
             'location_id' => ['nullable', 'exists:locations,id'],
+            'division_id' => ['nullable', 'exists:divisions,id'],
             'id_number' => ['nullable', 'string', 'max:255'],
+            'weekend_days' => ['nullable', 'array'],
+            'weekend_days.*' => ['integer', 'min:0', 'max:6'],
             'is_locked' => ['required', 'in:0,1']
         ]);
+
+        if (isset($data['weekend_days'])) {
+            $data['weekend_days'] = implode(',', $data['weekend_days']);
+        } else {
+            $data['weekend_days'] = null;
+        }
 
         Employee::create($data);
 
@@ -72,11 +102,12 @@ class EmployeeController extends \App\Http\Controllers\Controller
 
     public function edit(Employee $row)
     {
-        $departments = \App\Department::all();
-        $designations = \App\Designation::all();
-        $shifts = \App\Shift::all();
-        $locations = \App\Location::all();
-        return view('admin.employees.edit', compact('row', 'departments', 'designations', 'shifts', 'locations'));
+        $departments = \Cache::rememberForever('departments', fn() => \App\Department::all());
+        $designations = \Cache::rememberForever('designations', fn() => \App\Designation::all());
+        $shifts = \Cache::rememberForever('shifts', fn() => \App\Shift::all());
+        $locations = \Cache::rememberForever('locations', fn() => \App\Location::all());
+        $divisions = \Cache::rememberForever('divisions', fn() => \App\Division::all());
+        return view('admin.employees.edit', compact('row', 'departments', 'designations', 'shifts', 'locations', 'divisions'));
     }
 
     public function update(Request $req, Employee $row)
@@ -88,9 +119,18 @@ class EmployeeController extends \App\Http\Controllers\Controller
             'designation_id' => ['nullable', 'exists:designations,id'],
             'shift_id' => ['nullable', 'exists:shifts,id'],
             'location_id' => ['nullable', 'exists:locations,id'],
+            'division_id' => ['nullable', 'exists:divisions,id'],
             'id_number' => ['nullable', 'string', 'max:255'],
+            'weekend_days' => ['nullable', 'array'],
+            'weekend_days.*' => ['integer', 'min:0', 'max:6'],
             'is_locked' => ['required', 'in:0,1']
         ]);
+
+        if (isset($data['weekend_days'])) {
+            $data['weekend_days'] = implode(',', $data['weekend_days']);
+        } else {
+            $data['weekend_days'] = null;
+        }
 
         $row->update($data);
 
@@ -113,13 +153,14 @@ class EmployeeController extends \App\Http\Controllers\Controller
     {
         $req->flash();
 
-        $employees = \App\Employee::all();
-        $departments = \App\Department::all();
-        $designations = \App\Designation::all();
-        $shifts = \App\Shift::all();
-        $locations = \App\Location::all();
+        $employees = \App\Employee::select('id', 'name', 'employee_id')->get();
+        $departments = \Cache::rememberForever('departments', fn() => \App\Department::all());
+        $designations = \Cache::rememberForever('designations', fn() => \App\Designation::all());
+        $shifts = \Cache::rememberForever('shifts', fn() => \App\Shift::all());
+        $locations = \Cache::rememberForever('locations', fn() => \App\Location::all());
+        $divisions = \Cache::rememberForever('divisions', fn() => \App\Division::all());
 
-        $rows = Attendance::select("*");
+        $rows = Attendance::with(['employee.department', 'employee.designation', 'employee.shift', 'employee.location', 'employee.division', 'user']);
 
         if($req->search) {
             $rows->where(function($q) use ($req) {
@@ -136,25 +177,26 @@ class EmployeeController extends \App\Http\Controllers\Controller
         if($req->has('type') && $req->type != '')
             $rows->where('type', $req->type);
 
-        if($req->has('department_id') || $req->has('designation_id') || $req->has('shift_id') || $req->has('location_id')) {
+        if($req->has('department_id') || $req->has('designation_id') || $req->has('shift_id') || $req->has('location_id') || $req->has('division_id')) {
             $rows->whereHas('employee', function($q) use ($req) {
                 if ($req->has('department_id') && $req->department_id != '') $q->where('department_id', $req->department_id);
                 if ($req->has('designation_id') && $req->designation_id != '') $q->where('designation_id', $req->designation_id);
                 if ($req->has('shift_id') && $req->shift_id != '') $q->where('shift_id', $req->shift_id);
                 if ($req->has('location_id') && $req->location_id != '') $q->where('location_id', $req->location_id);
+                if ($req->has('division_id') && $req->division_id != '') $q->where('division_id', $req->division_id);
             });
         }
 
         if($req->from_date)
-            $rows->whereDate('created_at', '>=', $req->from_date);
+            $rows->where('created_at', '>=', $req->from_date . ' 00:00:00');
         
         if($req->to_date)
-            $rows->whereDate('created_at', '<=', $req->to_date);
+            $rows->where('created_at', '<=', $req->to_date . ' 23:59:59');
 
         if(!$req->export)
         {
             $rows = $rows->orderBy('id', 'DESC')->paginate(100);
-            return view('admin.employees.attendance', compact('rows', 'employees', 'departments', 'designations', 'shifts', 'locations'));
+            return view('admin.employees.attendance', compact('rows', 'employees', 'departments', 'designations', 'shifts', 'locations', 'divisions'));
         }
         else
         {
@@ -166,7 +208,7 @@ class EmployeeController extends \App\Http\Controllers\Controller
     public function blocks(\App\Employee $row)
     {
         $blocks = \App\EmployeeBlock::with('leaveType')->where('employee_id', $row->id)->orderBy('start_date', 'DESC')->get();
-        $leaveTypes = \App\LeaveType::all();
+        $leaveTypes = \Cache::rememberForever('leave_types', fn() => \App\LeaveType::all());
         return view('admin.employees.blocks', compact('row', 'blocks', 'leaveTypes'));
     }
 

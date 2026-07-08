@@ -106,6 +106,17 @@ Route::group([
     }); 
 
     Route::group([
+        'prefix'=>'divisions'
+    ], function(){
+        Route::get('/', 'DivisionController@index');        
+        Route::get('/create', 'DivisionController@create');        
+        Route::post('/create', 'DivisionController@store');        
+        Route::get('/edit/{division}', 'DivisionController@edit');        
+        Route::post('/edit/{division}', 'DivisionController@update');        
+        Route::get('/delete/{division}', 'DivisionController@delete');        
+    }); 
+
+    Route::group([
         'prefix'=>'designations'
     ], function(){
         Route::get('/', 'DesignationController@index');        

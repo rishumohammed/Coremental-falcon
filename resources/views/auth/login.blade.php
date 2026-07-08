@@ -6,6 +6,17 @@
         <div class="card border-0 shadow-sm" style="border-radius: 12px;">
             <div class="card-body p-5">
                 <div class="text-center mb-4">
+                    @php
+                        $appLogo = \Cache::rememberForever('st_app_logo', fn() => \App\Setting::where('key', 'app_logo')->first()->val ?? '');
+                        $appFallback = \Cache::rememberForever('st_app_fallback_text', fn() => \App\Setting::where('key', 'app_fallback_text')->first()->val ?? 'Falcon');
+                    @endphp
+                    
+                    @if($appLogo)
+                        <img src="{{ asset($appLogo) }}" alt="{{ $appFallback }}" class="mb-3" style="max-height: 80px; max-width: 250px;">
+                    @else
+                        <h2 class="font-weight-bold text-primary mb-3">{{ $appFallback }}</h2>
+                    @endif
+                    
                     <h4 class="font-weight-bold text-dark mb-1">{{ __('Welcome Back') }}</h4>
                     <p class="text-muted small">Please enter your credentials to login</p>
                 </div>

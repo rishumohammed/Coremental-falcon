@@ -105,6 +105,25 @@
                         </div>
 
                         <div class="form-group row">
+                            <label for="division_id" class="col-md-4 col-form-label text-md-right">{{ __('Division') }}</label>
+
+                            <div class="col-md-6">
+                                <select id="division_id" name="division_id" class="form-control @error('division_id') is-invalid @enderror">
+                                    <option value="">-- Select Division --</option>
+                                    @foreach($divisions as $div)
+                                        <option value="{{ $div->id }}" {{ old('division_id') == $div->id ? 'selected' : '' }}>{{ $div->name }}</option>
+                                    @endforeach
+                                </select>
+
+                                @error('division_id')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
                             <label for="location_id" class="col-md-4 col-form-label text-md-right">{{ __('Location') }}</label>
 
                             <div class="col-md-6">
@@ -120,6 +139,28 @@
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-md-4 col-form-label text-md-right">{{ __('Weekend Holidays') }}</label>
+                            <div class="col-md-6">
+                                <div class="d-flex flex-wrap mt-2" style="gap: 15px;">
+                                    @php
+                                        $dayNames = [
+                                            0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 
+                                            3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'
+                                        ];
+                                        $oldDays = old('weekend_days', []);
+                                    @endphp
+                                    @foreach($dayNames as $num => $label)
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="weekend_{{ $num }}" name="weekend_days[]" value="{{ $num }}" {{ in_array($num, $oldDays) ? 'checked' : '' }}>
+                                        <label class="custom-control-label" for="weekend_{{ $num }}">{{ $label }}</label>
+                                    </div>
+                                    @endforeach
+                                </div>
+                                <small class="form-text text-muted">Leave empty to use the global default weekend holidays.</small>
                             </div>
                         </div>
 

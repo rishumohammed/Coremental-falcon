@@ -29,18 +29,21 @@ class HomeController extends \App\Http\Controllers\Controller
         $totalEmployees = \App\Employee::where('is_locked', false)->count();
 
         // Calculate Present Today (unique employees checked in today)
-        $presentToday = \App\Attendance::whereDate('created_at', $today)
+        $presentToday = \App\Attendance::where('created_at', '>=', $today . ' 00:00:00')
+            ->where('created_at', '<=', $today . ' 23:59:59')
             ->where('type', 0) // Check-in
             ->distinct('employee_id')
             ->count('employee_id');
 
         $absentToday = max(0, $totalEmployees - $presentToday);
 
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days'));
         $attendances = \App\Attendance::select('employee_id', 'type', 'created_at', 'id')
+            ->where('created_at', '>=', $sevenDaysAgo . ' 00:00:00')
             ->orderBy('created_at', 'asc')
             ->get();
             
-        $employees = \App\Employee::where('is_locked', false)->get()->keyBy('id');
+        $employees = \App\Employee::select('id', 'name', 'employee_id')->where('is_locked', false)->get()->keyBy('id');
 
         $grouped = [];
         foreach ($attendances as $log) {

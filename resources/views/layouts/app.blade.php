@@ -7,7 +7,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ \Cache::rememberForever('st_app_fallback_text', fn() => \App\Setting::where('key', 'app_fallback_text')->first()->val ?? 'Falcon') }}</title>
 
     <!-- Scripts -->
     @stack('head')    
@@ -33,40 +33,45 @@
     <div id="app" class="admin-wrapper">
         
         <!-- Premium Topbar -->
+        @auth
         <nav class="admin-topbar">
             <div class="topbar-left d-flex align-items-center h-100">
                 <a class="topbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Falcon') }}
+                    @php
+                        $appLogo = \Cache::rememberForever('st_app_logo', fn() => \App\Setting::where('key', 'app_logo')->first()->val ?? '');
+                        $appFallback = \Cache::rememberForever('st_app_fallback_text', fn() => \App\Setting::where('key', 'app_fallback_text')->first()->val ?? 'Falcon');
+                    @endphp
+                    
+                    @if($appLogo)
+                        <img src="{{ asset($appLogo) }}" alt="{{ $appFallback }}" style="max-height: 40px; max-width: 200px;">
+                    @else
+                        {{ $appFallback }}
+                    @endif
                 </a>
             </div>
             <div class="topbar-right pr-4">
                 <ul class="navbar-nav">
-                    @guest
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                        </li>
-                    @else
-                        <li class="nav-item dropdown">
-                            <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                <i class="fas fa-user-circle mr-2" style="font-size: 1.2rem;"></i> {{ Auth::user()->name }}
+                    <li class="nav-item dropdown">
+                        <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                            <i class="fas fa-user-circle mr-2" style="font-size: 1.2rem;"></i> {{ Auth::user()->name }}
+                        </a>
+
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="{{ route('logout') }}"
+                               onclick="event.preventDefault();
+                                             document.getElementById('logout-form').submit();">
+                                {{ __('Logout') }}
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="{{ route('logout') }}"
-                                   onclick="event.preventDefault();
-                                                 document.getElementById('logout-form').submit();">
-                                    {{ __('Logout') }}
-                                </a>
-
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                    @csrf
-                                </form>
-                            </div>
-                        </li>
-                    @endguest
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                @csrf
+                            </form>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </nav>
+        @endauth
 
         <!-- Sidebar Navigation -->
         @auth

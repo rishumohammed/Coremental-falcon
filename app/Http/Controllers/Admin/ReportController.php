@@ -18,7 +18,7 @@ class ReportController extends Controller
         $fromDate = $req->from_date ? $req->from_date : date('Y-m-d', strtotime('-1 day'));
         $toDate = $req->to_date ? $req->to_date : date('Y-m-d', strtotime('-1 day'));
 
-        $employeesQuery = Employee::query();
+        $employeesQuery = Employee::select('id', 'name', 'employee_id', 'weekend_days');
 
         if ($req->search) {
             $employeesQuery->where(function ($q) use ($req) {
@@ -30,9 +30,9 @@ class ReportController extends Controller
         $employees = $employeesQuery->get();
 
         // Get all attendances in the date range
-        $attendances = Attendance::select('employee_id', \DB::raw('DATE(created_at) as date'))
+        $attendances = Attendance::select('employee_id', \DB::raw('CAST(created_at AS DATE) as date'))
             ->whereBetween('created_at', [$fromDate . " 00:00:00", $toDate . " 23:59:59"])
-            ->groupBy('employee_id', \DB::raw('DATE(created_at)'))
+            ->groupBy('employee_id', \DB::raw('CAST(created_at AS DATE)'))
             ->get()
             ->groupBy('date');
 
@@ -49,7 +49,7 @@ class ReportController extends Controller
 
         // Get the system default leave type
         $defaultLeaveType = \App\LeaveType::where('is_default', true)->first();
-        $allLeaveTypes = \App\LeaveType::all();
+        $allLeaveTypes = \Cache::rememberForever('leave_types', fn() => \App\LeaveType::all());
 
         // ── Load weekend & holiday exclusions ───────────────────────────────
         $weekendSetting = \App\Setting::where('key', 'weekend_days')->first();
@@ -70,14 +70,10 @@ class ReportController extends Controller
             (new \DateTime($toDate))->modify('+1 day')
         );
 
+        $employeeBlocksGrouped = $employeeBlocks->groupBy('employee_id');
+
         foreach ($period as $dt) {
             $dateStr = $dt->format("Y-m-d");
-
-            // Skip weekends
-            $dayOfWeek = (int) $dt->format('w'); // 0=Sun … 6=Sat
-            if (in_array($dayOfWeek, $weekendDays)) {
-                continue;
-            }
 
             // Skip public holidays
             if (in_array($dateStr, $holidayDates)) {
@@ -86,7 +82,7 @@ class ReportController extends Controller
             
             // Pluck employee IDs that have attendance on this specific date
             $attendancesOnDate = isset($attendances[$dateStr]) 
-                ? $attendances[$dateStr]->pluck('employee_id')->toArray() 
+                ? $attendances[$dateStr]->pluck('employee_id')->flip()->toArray() 
                 : [];
                 
             $leavesOnDate = isset($employeeLeaves[$dateStr]) 
@@ -94,7 +90,14 @@ class ReportController extends Controller
                 : collect();
 
             foreach ($employees as $emp) {
-                if (!in_array($emp->id, $attendancesOnDate)) {
+                // Check weekend for this specific employee
+                $empWeekend = $emp->weekend_days ? array_map('intval', array_filter(explode(',', $emp->weekend_days), 'strlen')) : $weekendDays;
+                $dayOfWeek = (int) $dt->format('w');
+                if (in_array($dayOfWeek, $empWeekend)) {
+                    continue;
+                }
+
+                if (!isset($attendancesOnDate[$emp->id])) {
                     $leaveTypeId = null;
 
                     if ($leavesOnDate->has($emp->id)) {
@@ -102,10 +105,10 @@ class ReportController extends Controller
                         $leaveTypeId = $leavesOnDate->get($emp->id)->leave_type_id;
                     } else {
                         // 2. Block Reason takes second priority
-                        $block = $employeeBlocks->where('employee_id', $emp->id)
-                            ->where('start_date', '<=', $dateStr)
-                            ->where('end_date', '>=', $dateStr)
-                            ->first();
+                        $empBlocks = $employeeBlocksGrouped->get($emp->id, collect());
+                        $block = $empBlocks->first(function($b) use ($dateStr) {
+                            return $b->start_date <= $dateStr && $b->end_date >= $dateStr;
+                        });
                         
                         if ($block) {
                             $leaveTypeId = $block->leave_type_id;
@@ -165,7 +168,7 @@ class ReportController extends Controller
         $fromDate = $req->from_date ? $req->from_date : date('Y-m-01');
         $toDate = $req->to_date ? $req->to_date : date('Y-m-d');
 
-        $employeesQuery = Employee::query()->with('department');
+        $employeesQuery = Employee::select('id', 'name', 'employee_id', 'department_id', 'weekend_days')->with('department');
 
         if ($req->search) {
             $employeesQuery->where(function ($q) use ($req) {
@@ -180,9 +183,9 @@ class ReportController extends Controller
 
         $employees = $employeesQuery->get();
 
-        $attendances = Attendance::select('employee_id', \DB::raw('DATE(created_at) as date'))
+        $attendances = Attendance::select('employee_id', \DB::raw('CAST(created_at AS DATE) as date'))
             ->whereBetween('created_at', [$fromDate . " 00:00:00", $toDate . " 23:59:59"])
-            ->groupBy('employee_id', \DB::raw('DATE(created_at)'))
+            ->groupBy('employee_id', \DB::raw('CAST(created_at AS DATE)'))
             ->get()
             ->groupBy('date');
 
@@ -196,7 +199,7 @@ class ReportController extends Controller
         })->get();
 
         $defaultLeaveType = \App\LeaveType::where('is_default', true)->first();
-        $allLeaveTypes = \App\LeaveType::all();
+        $allLeaveTypes = \Cache::rememberForever('leave_types', fn() => \App\LeaveType::all());
 
         $weekendSetting = \App\Setting::where('key', 'weekend_days')->first();
         $weekendDays = $weekendSetting ? array_map('intval', array_filter(explode(',', $weekendSetting->val), 'strlen')) : [];
@@ -222,26 +225,31 @@ class ReportController extends Controller
             (new \DateTime($toDate))->modify('+1 day')
         );
 
+        $employeeBlocksGrouped = $employeeBlocks->groupBy('employee_id');
+
         foreach ($period as $dt) {
             $dateStr = $dt->format("Y-m-d");
 
-            if (in_array((int)$dt->format('w'), $weekendDays)) continue;
             if (in_array($dateStr, $holidayDates)) continue;
             
-            $attendancesOnDate = isset($attendances[$dateStr]) ? $attendances[$dateStr]->pluck('employee_id')->toArray() : [];
+            $attendancesOnDate = isset($attendances[$dateStr]) ? $attendances[$dateStr]->pluck('employee_id')->flip()->toArray() : [];
             $leavesOnDate = isset($employeeLeaves[$dateStr]) ? $employeeLeaves[$dateStr]->keyBy('employee_id') : collect();
 
             foreach ($employees as $emp) {
-                if (!in_array($emp->id, $attendancesOnDate)) {
+                $empWeekend = $emp->weekend_days ? array_map('intval', array_filter(explode(',', $emp->weekend_days), 'strlen')) : $weekendDays;
+                if (in_array((int)$dt->format('w'), $empWeekend)) continue;
+
+                if (!isset($attendancesOnDate[$emp->id])) {
                     $leaveTypeId = null;
 
                     if ($leavesOnDate->has($emp->id)) {
                         $leaveTypeId = $leavesOnDate->get($emp->id)->leave_type_id;
                     } else {
-                        $block = $employeeBlocks->where('employee_id', $emp->id)
-                            ->where('start_date', '<=', $dateStr)
-                            ->where('end_date', '>=', $dateStr)
-                            ->first();
+                        $empBlocks = $employeeBlocksGrouped->get($emp->id, collect());
+                        $block = $empBlocks->first(function($b) use ($dateStr) {
+                            return $b->start_date <= $dateStr && $b->end_date >= $dateStr;
+                        });
+                        
                         if ($block) {
                             $leaveTypeId = $block->leave_type_id;
                         } else if ($defaultLeaveType && $dateStr <= date('Y-m-d')) {
@@ -291,7 +299,7 @@ class ReportController extends Controller
         ]);
         $paginatedRows->setPath($req->url());
 
-        $departments = \App\Department::all();
+        $departments = \Cache::rememberForever('departments', fn() => \App\Department::all());
         $allEmployees = Employee::all(['id', 'name', 'employee_id']);
 
         return view('admin.reports.leaves', compact('paginatedRows', 'allLeaveTypes', 'departments', 'allEmployees'));
@@ -301,15 +309,17 @@ class ReportController extends Controller
     {
         $req->flash();
 
-        // Fetch all history to clear the queue
-        $fromDate = '2020-01-01';
+        // Fetch last 30 days of history to prevent out-of-memory errors with 1000+ employees
+        $fromDate = date('Y-m-d', strtotime('-30 days'));
         $toDate = date('Y-m-d');
 
-        $departments = \App\Department::all();
+        $departments = \Cache::rememberForever('departments', fn() => \App\Department::all());
 
-        $employeesQuery = Employee::query();
+        $employeesQuery = Employee::select('id', 'name', 'employee_id', 'department_id');
 
+        $hasFilter = false;
         if ($req->search) {
+            $hasFilter = true;
             $employeesQuery->where(function ($q) use ($req) {
                 $q->where('name', 'like', "%{$req->search}%")
                   ->orWhere('employee_id', 'like', "%{$req->search}%");
@@ -317,6 +327,7 @@ class ReportController extends Controller
         }
         
         if ($req->has('department_id') && $req->department_id != '') {
+            $hasFilter = true;
             $employeesQuery->where('department_id', $req->department_id);
         }
 
@@ -324,15 +335,20 @@ class ReportController extends Controller
         $employees = $employeesCollection->keyBy('id');
         $employeeIds = $employees->keys();
 
-        $attendances = Attendance::select('employee_id', 'type', 'created_at', 'id', 'photo', 'entry_type')
-            ->whereIn('employee_id', $employeeIds)
+        $attQuery = Attendance::select('employee_id', 'type', 'created_at', 'id', 'photo', 'entry_type')
             ->whereBetween('created_at', [$fromDate . " 00:00:00", $toDate . " 23:59:59"])
-            ->orderBy('created_at', 'asc')
-            ->get();
+            ->orderBy('created_at', 'asc');
+            
+        if ($hasFilter) {
+            $attQuery->whereIn('employee_id', $employeeIds);
+        }
+        
+        $attendances = $attQuery->get();
 
+        $tz = timezone();
         $grouped = [];
         foreach ($attendances as $log) {
-            $dateKey = date('Y-m-d', strtotime($log->created_at->timezone(timezone())));
+            $dateKey = $log->created_at->timezone($tz)->format('Y-m-d');
             $empId = $log->employee_id;
             
             if (!isset($grouped[$dateKey])) {
@@ -358,7 +374,7 @@ class ReportController extends Controller
                 $pairs = [];
 
                 foreach ($logs as $log) {
-                    $logTime = date('Y-m-d H:i:s', strtotime($log->created_at->timezone(timezone())));
+                    $logTime = $log->created_at->timezone($tz)->format('Y-m-d H:i:s');
                     
                     if ($log->type == 0) { // Check In
                         if ($checkInTime !== null) {
@@ -485,12 +501,12 @@ class ReportController extends Controller
             $toDate = $req->to_date ? $req->to_date : date('Y-m-d');
         }
 
-        $departments = \App\Department::all();
-        $designations = \App\Designation::all();
-        $shifts = \App\Shift::all();
-        $locations = \App\Location::all();
+        $departments = \Cache::rememberForever('departments', fn() => \App\Department::all());
+        $designations = \Cache::rememberForever('designations', fn() => \App\Designation::all());
+        $shifts = \Cache::rememberForever('shifts', fn() => \App\Shift::all());
+        $locations = \Cache::rememberForever('locations', fn() => \App\Location::all());
 
-        $employeesQuery = Employee::query();
+        $employeesQuery = Employee::select('id', 'name', 'employee_id', 'department_id', 'designation_id', 'shift_id', 'location_id')->with(['department', 'designation', 'shift', 'location']);
 
         if ($req->search) {
             $employeesQuery->where(function ($q) use ($req) {
@@ -512,12 +528,23 @@ class ReportController extends Controller
             $employeesQuery->where('location_id', $req->location_id);
         }
 
+        $hasFilter = false;
+        if ($req->search || $req->department_id || $req->designation_id || $req->shift_id || $req->location_id) {
+            $hasFilter = true;
+        }
+
         $employees = $employeesQuery->get()->keyBy('id');
+        $employeeIds = $employees->keys();
 
         // Fetch all attendances in range
-        $attendances = Attendance::whereBetween('created_at', [$fromDate . " 00:00:00", $toDate . " 23:59:59"])
-            ->orderBy('created_at', 'ASC')
-            ->get();
+        $attQuery = Attendance::whereBetween('created_at', [$fromDate . " 00:00:00", $toDate . " 23:59:59"])
+            ->orderBy('created_at', 'ASC');
+            
+        if ($hasFilter) {
+            $attQuery->whereIn('employee_id', $employeeIds);
+        }
+        
+        $attendances = $attQuery->get();
 
         $viewType = $req->view_type ?: 'daily';
         $sortBy = $req->sort_by ?: 'date';

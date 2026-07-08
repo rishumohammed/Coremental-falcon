@@ -36,7 +36,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'face_ids' => 'Array',
+        'face_ids' => 'array',
         'is_locked' => 'boolean'
     ];
 

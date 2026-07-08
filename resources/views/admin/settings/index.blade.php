@@ -67,6 +67,20 @@
             </div>
         </div>
 
+        <!-- Divisions -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card card-white h-100 feature-card">
+                <div class="card-body p-4 d-flex flex-column align-items-center text-center">
+                    <div class="icon-circle mb-3 pastel-blue">
+                        <i class="fas fa-layer-group fa-lg"></i>
+                    </div>
+                    <h5 class="card-title font-weight-bold mb-2">Divisions</h5>
+                    <p class="card-text text-muted small mb-4">Manage larger organizational divisions.</p>
+                    <a href="{{ url('admin/divisions') }}" class="btn ui-btn btn-light mt-auto w-100">Manage Divisions</a>
+                </div>
+            </div>
+        </div>
+
         <!-- Designations -->
         <div class="col-md-6 col-lg-3 mb-4">
             <div class="card card-white h-100 feature-card">

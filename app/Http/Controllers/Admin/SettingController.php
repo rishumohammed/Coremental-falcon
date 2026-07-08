@@ -20,26 +20,44 @@ class SettingController extends \App\Http\Controllers\Controller
 
     public function general()
     {
-        // Exclude weekend_days from the generic key/value form
-        $rows = Setting::where('key', '!=', 'weekend_days')->get();
-        return view('admin.settings.general', compact('rows'));
+        // Exclude weekend_days and branding from the generic key/value form
+        $rows = Setting::whereNotIn('key', ['weekend_days', 'app_logo', 'app_fallback_text'])->get();
+        $logo = Setting::where('key', 'app_logo')->first();
+        $fallback = Setting::where('key', 'app_fallback_text')->first();
+        return view('admin.settings.general', compact('rows', 'logo', 'fallback'));
     }
 
     public function update(Request $req)
     {
         $data = $req->validate([            
-            'val.*' => ['required']                        
+            'val.*' => ['nullable'],
+            'app_fallback_text' => ['required', 'string', 'max:255'],
+            'app_logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:2048']
         ]);
 
-        foreach($data['val'] as $id => $val)
-        {
-            Setting::whereid($id)->update(['val' => $val]);
-            
-            $row = Setting::find($id);
-            \Cache::forget('st_'.$row->key);
+        // Generic text settings
+        if (isset($data['val'])) {
+            foreach($data['val'] as $id => $val) {
+                Setting::whereid($id)->update(['val' => $val]);
+                $row = Setting::find($id);
+                \Cache::forget('st_'.$row->key);
+            }
         }
 
-        return redirect('admin/settings')->with('status', 'Settings updated successfully');        
+        // Branding settings
+        Setting::where('key', 'app_fallback_text')->update(['val' => $req->app_fallback_text]);
+        \Cache::forget('st_app_fallback_text');
+
+        if ($req->hasFile('app_logo')) {
+            $file = $req->file('app_logo');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/logo'), $filename);
+            
+            Setting::where('key', 'app_logo')->update(['val' => 'uploads/logo/' . $filename]);
+            \Cache::forget('st_app_logo');
+        }
+
+        return redirect('admin/settings/general')->with('status', 'Settings updated successfully');        
     }
 
     public function clearExcelCache()

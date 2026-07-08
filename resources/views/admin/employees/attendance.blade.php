@@ -14,83 +14,90 @@
     <!-- Search & Filter Card -->
     <div class="card-white filter-card">
         <form method="GET">
-            <div class="d-flex flex-column flex-md-row mb-3">
+            <!-- Row 1 -->
+            <div class="row mb-3">
                 <!-- Text Search -->
-                <div class="search-input-wrapper flex-grow-1 mr-md-3 mb-2 mb-md-0">
-                    <i class="fas fa-search"></i>
-                    <input type="text" name="search" list="employee_names" class="ui-input-search" value="{{ request('search') }}" placeholder="Search employee name or ID..." autocomplete="off">
-                    <datalist id="employee_names">
-                        @foreach($employees as $emp)
-                            <option value="{{ $emp->name }}">{{ $emp->employee_id }}</option>
-                        @endforeach
-                    </datalist>
+                <div class="col-md-2 mb-2 mb-md-0">
+                    <div class="search-input-wrapper h-100 w-100">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" list="employee_names" class="ui-input-search w-100" value="{{ request('search') }}" placeholder="Search employee..." autocomplete="off">
+                        <datalist id="employee_names">
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->name }}">{{ $emp->employee_id }}</option>
+                            @endforeach
+                        </datalist>
+                    </div>
                 </div>
                 <!-- Type Select -->
-                <div class="w-100 mr-md-3 mb-2 mb-md-0" style="max-width: 200px;">
-                    <select class="form-control" name="type">
+                <div class="col-md-2 mb-2 mb-md-0">
+                    <select class="form-control" name="type" style="height: 100%; min-height: 42px;">
                         <option value=''>All Types</option>
                         <option value='0' @if(request('type') === '0') selected @endif>Check In</option>
                         <option value='1' @if(request('type') === '1') selected @endif>Check Out</option>
                     </select>
                 </div>
-                <!-- Employee Select -->
-                <div class="w-100" style="max-width: 300px;">
-                    <select class="form-control" name="employee_id">
-                        <option value=''>All Employees</option>
-                        @foreach($employees as $row)
-                        <option value='{{$row->id}}' @if($row->id == old('employee_id', request('employee_id'))) selected @endif >{{$row->employee_id.' - '.$row->name}}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            
-            <div class="row mb-3">
-                <div class="col-md-3 mb-2 mb-md-0">
-                    <select class="form-control" name="department_id">
+                <!-- Department Select -->
+                <div class="col-md-2 mb-2 mb-md-0">
+                    <select class="form-control" name="department_id" style="height: 100%; min-height: 42px;">
                         <option value="">All Departments</option>
                         @foreach($departments as $dept)
                             <option value="{{ $dept->id }}" @if(request('department_id') == $dept->id) selected @endif>{{ $dept->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-2 mb-md-0">
-                    <select class="form-control" name="designation_id">
+                <!-- Division Select -->
+                <div class="col-md-2 mb-2 mb-md-0">
+                    <select class="form-control" name="division_id" style="height: 100%; min-height: 42px;">
+                        <option value="">All Divisions</option>
+                        @foreach($divisions as $div)
+                            <option value="{{ $div->id }}" @if(request('division_id') == $div->id) selected @endif>{{ $div->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <!-- Designation Select -->
+                <div class="col-md-2 mb-2 mb-md-0">
+                    <select class="form-control" name="designation_id" style="height: 100%; min-height: 42px;">
                         <option value="">All Designations</option>
                         @foreach($designations as $desig)
                             <option value="{{ $desig->id }}" @if(request('designation_id') == $desig->id) selected @endif>{{ $desig->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-2 mb-md-0">
-                    <select class="form-control" name="shift_id">
+                <!-- Shift Select -->
+                <div class="col-md-2 mb-2 mb-md-0">
+                    <select class="form-control" name="shift_id" style="height: 100%; min-height: 42px;">
                         <option value="">All Shifts</option>
                         @foreach($shifts as $shift)
                             <option value="{{ $shift->id }}" @if(request('shift_id') == $shift->id) selected @endif>{{ $shift->name }}</option>
                         @endforeach
                     </select>
                 </div>
+            </div>
+            
+            <!-- Row 2 -->
+            <div class="row align-items-center">
+                <!-- Location Select -->
                 <div class="col-md-3 mb-2 mb-md-0">
-                    <select class="form-control" name="location_id">
+                    <select class="form-control" name="location_id" style="height: 100%; min-height: 42px;">
                         <option value="">All Locations</option>
                         @foreach($locations as $loc)
                             <option value="{{ $loc->id }}" @if(request('location_id') == $loc->id) selected @endif>{{ $loc->name }}</option>
                         @endforeach
                     </select>
                 </div>
-            </div>
-            
-            <div class="d-flex align-items-center justify-content-between flex-wrap">
-                <div class="d-flex align-items-center flex-wrap">
-                    <div class="mr-3 d-flex align-items-center mb-2 mb-md-0">
+                <!-- Date Range -->
+                <div class="col-md-5 d-flex align-items-center mb-2 mb-md-0">
+                    <div class="mr-3 d-flex align-items-center">
                         <span class="text-muted mr-2 small font-weight-bold text-uppercase">From:</span>
                         <input type="date" class="ui-select bg-white" name="from_date" value="{{old('from_date', request('from_date'))}}" />
                     </div>
-                    <div class="mr-3 d-flex align-items-center mb-2 mb-md-0">
+                    <div class="d-flex align-items-center">
                         <span class="text-muted mr-2 small font-weight-bold text-uppercase">To:</span>
                         <input type="date" class="ui-select bg-white" name="to_date" value="{{old('to_date', request('to_date'))}}" />
                     </div>
                 </div>
-                <div class="d-flex align-items-center mt-2 mt-md-0">
+                <!-- Buttons -->
+                <div class="col-md-4 d-flex justify-content-md-end align-items-center">
                     <button type="submit" name="action" value="filter" class="btn ui-btn ui-btn-primary mr-2">
                         <i class="fas fa-filter mr-1"></i> Filter
                     </button>
@@ -112,6 +119,7 @@
                         <th style="width: 80px;">Photo</th>
                         <th style="min-width: 200px;">Employee</th>
                         <th style="min-width: 150px;">Department</th>
+                        <th style="min-width: 150px;">Division</th>
                         <th style="min-width: 150px;">Designation</th>
                         <th style="min-width: 120px;">Shift</th>
                         <th style="min-width: 150px;">Work Loc.</th>
@@ -146,6 +154,13 @@
                     <td>
                         @if(optional($row->employee)->department)
                             <span class="badge badge-info">{{ $row->employee->department->name }}</span>
+                        @else
+                            <span class="text-muted small">N/A</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if(optional($row->employee)->division)
+                            <span class="badge badge-secondary">{{ $row->employee->division->name }}</span>
                         @else
                             <span class="text-muted small">N/A</span>
                         @endif

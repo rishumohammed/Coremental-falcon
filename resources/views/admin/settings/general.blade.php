@@ -14,8 +14,39 @@
     <div class="row">
         <div class="col-md-8 col-lg-6">
             <div class="card-white p-4">
-                <form action="{{ url('admin/settings/general') }}" method="post">
+                <form action="{{ url('admin/settings/general') }}" method="post" enctype="multipart/form-data">
                     @csrf
+                    
+                    <h5 class="font-weight-bold text-dark mb-4 border-bottom pb-2">Branding</h5>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-dark">Application Logo</label>
+                                <div class="custom-file mb-2">
+                                    <input type="file" class="custom-file-input" id="app_logo" name="app_logo" accept="image/*">
+                                    <label class="custom-file-label" for="app_logo">Choose file...</label>
+                                </div>
+                                <small class="text-muted">Recommended: Transparent PNG, max 2MB.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center justify-content-center border rounded" style="background-color: #f8fafc; min-height: 80px;">
+                            @if(isset($logo) && $logo->val)
+                                <img src="{{ asset($logo->val) }}" alt="Current Logo" style="max-height: 50px; max-width: 100%;">
+                            @else
+                                <span class="text-muted small">No logo uploaded</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-5">
+                        <label class="font-weight-bold text-dark">Fallback Text</label>
+                        <input type="text" class="form-control" style="background-color: #f8fafc; border: 1px solid #e5e7eb; font-size: 0.95rem; padding: 0.75rem 1rem;" 
+                            name="app_fallback_text" value="{{ $fallback->val ?? 'Falcon' }}" required />
+                        <small class="text-muted">Text to display if no logo is uploaded.</small>
+                    </div>
+
+                    <h5 class="font-weight-bold text-dark mb-4 border-bottom pb-2">Other Settings</h5>
                     @foreach($rows as $row)
                     <div class="form-group mb-4">
                         <label class="font-weight-bold text-dark">{{$row->label}}</label>
