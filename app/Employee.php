@@ -45,4 +45,9 @@ class Employee extends Model
     {
         return $this->belongsTo(\App\Division::class);
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(\App\User::class, 'assigned_employees', 'employee_id', 'user_id');
+    }
 }

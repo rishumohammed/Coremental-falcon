@@ -29,6 +29,8 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
                         <th style="width: 150px" class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -36,6 +38,8 @@
                     @foreach($rows as $row)
                     <tr>
                         <td class="font-weight-bold text-dark align-middle">{{$row->name}}</td>
+                        <td class="align-middle">{{ $row->start_time ? \Carbon\Carbon::parse($row->start_time)->format('h:i A') : '-' }}</td>
+                        <td class="align-middle">{{ $row->end_time ? \Carbon\Carbon::parse($row->end_time)->format('h:i A') : '-' }}</td>
                         <td>
                             <div class="d-flex justify-content-center align-items-center">
                                 <a href="{{ url('admin/shifts/edit/'.$row->id) }}" class="btn btn-sm btn-light border mr-2" title="Edit">
@@ -50,7 +54,7 @@
                     @endforeach
                     @if(count($rows) == 0)
                     <tr>
-                        <td colspan="2" class="text-center py-4 text-muted">No Shifts found.</td>
+                        <td colspan="4" class="text-center py-4 text-muted">No Shifts found.</td>
                     </tr>
                     @endif
                 </tbody>

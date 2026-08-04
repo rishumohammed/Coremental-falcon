@@ -159,6 +159,7 @@ class EmployeeController extends \App\Http\Controllers\Controller
         $shifts = \Cache::rememberForever('shifts', fn() => \App\Shift::all());
         $locations = \Cache::rememberForever('locations', fn() => \App\Location::all());
         $divisions = \Cache::rememberForever('divisions', fn() => \App\Division::all());
+        $adminUsers = \App\User::orderBy('username')->get();
 
         $rows = Attendance::with(['employee.department', 'employee.designation', 'employee.shift', 'employee.location', 'employee.division', 'user']);
 
@@ -176,6 +177,12 @@ class EmployeeController extends \App\Http\Controllers\Controller
 
         if($req->has('type') && $req->type != '')
             $rows->where('type', $req->type);
+
+        if($req->has('user_id') && $req->user_id != '') {
+            $rows->whereHas('employee.users', function($q) use ($req) {
+                $q->where('users.id', $req->user_id);
+            });
+        }
 
         if($req->has('department_id') || $req->has('designation_id') || $req->has('shift_id') || $req->has('location_id') || $req->has('division_id')) {
             $rows->whereHas('employee', function($q) use ($req) {
@@ -196,7 +203,7 @@ class EmployeeController extends \App\Http\Controllers\Controller
         if(!$req->export)
         {
             $rows = $rows->orderBy('id', 'DESC')->paginate(100);
-            return view('admin.employees.attendance', compact('rows', 'employees', 'departments', 'designations', 'shifts', 'locations', 'divisions'));
+            return view('admin.employees.attendance', compact('rows', 'employees', 'departments', 'designations', 'shifts', 'locations', 'divisions', 'adminUsers'));
         }
         else
         {

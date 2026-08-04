@@ -57,6 +57,26 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="font-weight-bold text-dark small">Division</label>
+                            <select name="division_id" class="form-control">
+                                <option value="">All Divisions</option>
+                                @foreach($divisions as $div)
+                                    <option value="{{ $div->id }}" {{ request('division_id') == $div->id ? 'selected' : '' }}>
+                                        {{ $div->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="font-weight-bold text-dark small">Assigned User</label>
+                            <select name="user_id" class="form-control">
+                                <option value="">All Users</option>
+                                @foreach($adminUsers as $user)
+                                    <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @if(request('view_type') == 'monthly')
                             <div class="col-md-6 mb-3">
                                 <label class="font-weight-bold text-dark small">Select Month</label>
@@ -123,7 +143,7 @@
         </div>
 
         <div class="row mb-3">
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="card-white p-3 d-flex justify-content-between align-items-center"
                     style="background-color: #f0fdf4; border: 1px solid #bbf7d0;">
                     <div>
@@ -132,6 +152,16 @@
                         <small class="text-muted">Total for all filtered employees across selected period</small>
                     </div>
                     <h3 class="mb-0 text-success font-weight-bold">{{ $grandTotalHours }}</h3>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-white p-3 d-flex justify-content-between align-items-center"
+                    style="background-color: #fdfaf0; border: 1px solid #f7eebb;">
+                    <div>
+                        <h6 class="mb-0 text-warning font-weight-bold" style="color: #d97706 !important;"><i class="fas fa-coffee mr-2"></i>Grand Total Break Time</h6>
+                        <small class="text-muted">Total break time across selected period</small>
+                    </div>
+                    <h3 class="mb-0 font-weight-bold" style="color: #d97706 !important;">{{ $grandTotalBreak }}</h3>
                 </div>
             </div>
         </div>
@@ -153,9 +183,11 @@
                                 @elseif($viewType == 'total') Period
                                 @else Date @endif
                             </th>
+                            <th style="min-width: 150px;">Assigned User</th>
                             <th style="min-width: 120px;">Employee ID</th>
                             <th style="min-width: 200px;">Name</th>
                             <th style="min-width: 150px;">Department</th>
+                            <th style="min-width: 150px;">Division</th>
                             <th style="min-width: 150px;">Designation</th>
                             <th style="min-width: 120px;">Shift</th>
                             <th style="min-width: 150px;">Location</th>
@@ -182,6 +214,15 @@
                                                 {{ date('M d, Y', strtotime($row->raw_date)) }}
                                             @endif
                                         </td>
+                                        <td rowspan="{{ $pairsCount }}">
+                                            @if($row->employee->users && $row->employee->users->count() > 0)
+                                                @foreach($row->employee->users as $user)
+                                                    <span class="badge badge-info">{{$user->username}}</span>
+                                                @endforeach
+                                            @else
+                                                <span class="text-muted small">Unassigned</span>
+                                            @endif
+                                        </td>
                                         <td rowspan="{{ $pairsCount }}">{{ $row->employee->employee_id }}</td>
                                         <td rowspan="{{ $pairsCount }}" class="font-weight-bold text-dark">
                                             {{ $row->employee->name }}
@@ -189,6 +230,13 @@
                                         <td rowspan="{{ $pairsCount }}">
                                             @if($row->employee->department)
                                                 <span class="badge badge-info">{{ $row->employee->department->name }}</span>
+                                            @else
+                                                <span class="text-muted small">N/A</span>
+                                            @endif
+                                        </td>
+                                        <td rowspan="{{ $pairsCount }}">
+                                            @if($row->employee->division)
+                                                <span class="badge badge-secondary">{{ $row->employee->division->name }}</span>
                                             @else
                                                 <span class="text-muted small">N/A</span>
                                             @endif
@@ -236,7 +284,14 @@
                                     @endif
 
                                     @if($index === 0)
-                                        <td rowspan="{{ $pairsCount }}" class="font-weight-bold">{{ $row->formatted_time }}</td>
+                                        <td rowspan="{{ $pairsCount }}">
+                                            <div class="font-weight-bold">{{ $row->formatted_time }}</div>
+                                            @if($row->total_break_minutes > 0)
+                                                <div class="small text-muted mt-1" title="Break Time">
+                                                    <i class="fas fa-coffee mr-1"></i>{{ $row->formatted_break_time }}
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td rowspan="{{ $pairsCount }}">
                                             @if($row->status !== 'Complete')
                                                 <span class="badge badge-danger">{{ $row->status }}</span>
@@ -249,7 +304,7 @@
                             @endforeach
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">No records found for the selected date
+                                <td colspan="10" class="text-center py-4 text-muted">No records found for the selected date
                                     range.</td>
                             </tr>
                         @endforelse

@@ -27,6 +27,38 @@
     .py-4>.container{
         max-width:99% !important;
     }
+    .admin-main {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        overflow: hidden !important; /* Force constraint */
+    }
+    main {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    .table-responsive {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
+    }
+    .table-responsive {
+        max-height: 70vh;
+        overflow-y: scroll;
+        overflow-x: scroll;
+        scrollbar-width: auto; /* Firefox */
+        scrollbar-color: #cbd5e1 #f1f1f1; /* Firefox */
+    }
+    .table-responsive table {
+        white-space: nowrap;
+    }
+    .table-responsive table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: #f8f9fa; /* Matches bg-light */
+        box-shadow: 0 1px 1px -1px rgba(0,0,0,0.4);
+    }
     </style>
 </head>
 <body>
@@ -90,6 +122,9 @@
                 <li class="nav-item @if(\Request::is('admin/salesman/meeting-attendance')) active @endif">
                     <a class="nav-link" href="{{ url('admin/salesman/meeting-attendance') }}"><i class="fas fa-calendar-check"></i> {{ __('Salesman Attendance') }}</a>
                 </li>
+                <li class="nav-item @if(\Request::is('admin/reports/manual-entry')) active @endif">
+                    <a class="nav-link" href="{{ url('admin/reports/manual-entry') }}"><i class="fas fa-keyboard"></i> {{ __('Manual Entry') }}</a>
+                </li>
 
                 <div class="nav-category">Management</div>
                 <li class="nav-item @if(\Request::is('admin/employees')) active @endif">
@@ -114,7 +149,12 @@
                 </li>
 
                 <div class="nav-category">System</div>
-                <li class="nav-item @if(\Request::is('admin/settings')) active @endif">
+                @if(\Auth::user()->username === 'superadmin')
+                <li class="nav-item @if(\Request::is('admin/notifications*')) active @endif">
+                    <a class="nav-link" href="{{ url('admin/notifications') }}"><i class="fas fa-bell"></i> {{ __('OTPs & Notifications') }}</a>
+                </li>
+                @endif
+                <li class="nav-item @if(\Request::is('admin/settings*')) active @endif">
                     <a class="nav-link" href="{{ url('admin/settings') }}"><i class="fas fa-cog"></i> {{ __('Settings') }}</a>
                 </li>
                 

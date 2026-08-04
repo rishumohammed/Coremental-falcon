@@ -28,7 +28,7 @@
                 <div class="col-md-9">                   
                     <select class="form-control mr-2 no-select2" required name="employee_ids[]" id="employee_ids" multiple >
                         @foreach($unassigned_employees as $erow)
-                        <option value="{{$erow->id}}">{{$erow->name}}</option>
+                        <option value="{{$erow->id}}">{{$erow->employee_id}} - {{$erow->name}}</option>
                         @endforeach
                     </select>
                 </div>

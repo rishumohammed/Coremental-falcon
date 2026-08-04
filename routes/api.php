@@ -66,5 +66,7 @@ Route::group([
     ], function(){
         Route::get('/', 'SettingController@index');
     });
-
 });
+
+Route::post('/login-otp-request', 'Api\OtpController@requestOtp');
+Route::post('/login-otp-verify', 'Api\OtpController@verifyOtp');

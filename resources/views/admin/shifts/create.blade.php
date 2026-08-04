@@ -22,6 +22,22 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group mb-4">
+                            <label class="font-weight-bold text-dark">Start Time</label>
+                            <input type="time" name="start_time" class="form-control" style="background-color: #f8fafc; border: 1px solid #e5e7eb;" value="{{ old('start_time') }}">
+                            @error('start_time')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+                        <div class="col-md-6 form-group mb-4">
+                            <label class="font-weight-bold text-dark">End Time</label>
+                            <input type="time" name="end_time" class="form-control" style="background-color: #f8fafc; border: 1px solid #e5e7eb;" value="{{ old('end_time') }}">
+                            @error('end_time')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+                    </div>
                     <button type="submit" class="btn ui-btn ui-btn-primary px-4">
                         <i class="fas fa-save mr-1"></i> Save
                     </button>
@@ -32,4 +48,3 @@
     </div>
 </div>
 @endsection
-

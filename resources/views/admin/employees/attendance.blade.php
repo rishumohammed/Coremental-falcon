@@ -14,31 +14,38 @@
     <!-- Search & Filter Card -->
     <div class="card-white filter-card">
         <form method="GET">
-            <!-- Row 1 -->
-            <div class="row mb-3">
+            <!-- Row 1: Search and Main Filters (6 items) -->
+            <div class="d-flex flex-wrap align-items-center w-100 mb-3" style="gap: 12px;">
                 <!-- Text Search -->
-                <div class="col-md-2 mb-2 mb-md-0">
-                    <div class="search-input-wrapper h-100 w-100">
-                        <i class="fas fa-search"></i>
-                        <input type="text" name="search" list="employee_names" class="ui-input-search w-100" value="{{ request('search') }}" placeholder="Search employee..." autocomplete="off">
-                        <datalist id="employee_names">
-                            @foreach($employees as $emp)
-                                <option value="{{ $emp->name }}">{{ $emp->employee_id }}</option>
-                            @endforeach
-                        </datalist>
-                    </div>
+                <div class="search-input-wrapper" style="flex: 1; min-width: 160px; max-width: 250px; height: 42px;">
+                    <i class="fas fa-search" style="top: 21px;"></i>
+                    <input type="text" name="search" list="employee_names" class="ui-input-search w-100" value="{{ request('search') }}" placeholder="Search..." autocomplete="off" style="height: 100%; border: none;">
+                    <datalist id="employee_names">
+                        @foreach($employees as $emp)
+                            <option value="{{ $emp->name }}">{{ $emp->employee_id }}</option>
+                        @endforeach
+                    </datalist>
+                </div>
+                <!-- User Select -->
+                <div style="flex: 1; min-width: 120px; max-width: 180px; height: 42px;">
+                    <select class="form-control" name="user_id">
+                        <option value="">All Users</option>
+                        @foreach($adminUsers as $user)
+                            <option value="{{ $user->id }}" @if(request('user_id') == $user->id) selected @endif>{{ $user->username }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <!-- Type Select -->
-                <div class="col-md-2 mb-2 mb-md-0">
-                    <select class="form-control" name="type" style="height: 100%; min-height: 42px;">
+                <div style="flex: 1; min-width: 120px; max-width: 150px; height: 42px;">
+                    <select class="form-control" name="type">
                         <option value=''>All Types</option>
                         <option value='0' @if(request('type') === '0') selected @endif>Check In</option>
                         <option value='1' @if(request('type') === '1') selected @endif>Check Out</option>
                     </select>
                 </div>
                 <!-- Department Select -->
-                <div class="col-md-2 mb-2 mb-md-0">
-                    <select class="form-control" name="department_id" style="height: 100%; min-height: 42px;">
+                <div style="flex: 1; min-width: 130px; max-width: 180px; height: 42px;">
+                    <select class="form-control" name="department_id">
                         <option value="">All Departments</option>
                         @foreach($departments as $dept)
                             <option value="{{ $dept->id }}" @if(request('department_id') == $dept->id) selected @endif>{{ $dept->name }}</option>
@@ -46,17 +53,21 @@
                     </select>
                 </div>
                 <!-- Division Select -->
-                <div class="col-md-2 mb-2 mb-md-0">
-                    <select class="form-control" name="division_id" style="height: 100%; min-height: 42px;">
+                <div style="flex: 1; min-width: 130px; max-width: 180px; height: 42px;">
+                    <select class="form-control" name="division_id">
                         <option value="">All Divisions</option>
                         @foreach($divisions as $div)
                             <option value="{{ $div->id }}" @if(request('division_id') == $div->id) selected @endif>{{ $div->name }}</option>
                         @endforeach
                     </select>
                 </div>
+            </div>
+
+            <!-- Row 2: Shift, Location, Dates (5 items) -->
+            <div class="d-flex flex-wrap align-items-center w-100 mb-3" style="gap: 12px;">
                 <!-- Designation Select -->
-                <div class="col-md-2 mb-2 mb-md-0">
-                    <select class="form-control" name="designation_id" style="height: 100%; min-height: 42px;">
+                <div style="flex: 1; min-width: 130px; max-width: 180px; height: 42px;">
+                    <select class="form-control" name="designation_id">
                         <option value="">All Designations</option>
                         @foreach($designations as $desig)
                             <option value="{{ $desig->id }}" @if(request('designation_id') == $desig->id) selected @endif>{{ $desig->name }}</option>
@@ -64,48 +75,46 @@
                     </select>
                 </div>
                 <!-- Shift Select -->
-                <div class="col-md-2 mb-2 mb-md-0">
-                    <select class="form-control" name="shift_id" style="height: 100%; min-height: 42px;">
+                <div style="flex: 1; min-width: 130px; max-width: 200px; height: 42px;">
+                    <select class="form-control" name="shift_id">
                         <option value="">All Shifts</option>
                         @foreach($shifts as $shift)
                             <option value="{{ $shift->id }}" @if(request('shift_id') == $shift->id) selected @endif>{{ $shift->name }}</option>
                         @endforeach
                     </select>
                 </div>
-            </div>
-            
-            <!-- Row 2 -->
-            <div class="row align-items-center">
                 <!-- Location Select -->
-                <div class="col-md-3 mb-2 mb-md-0">
-                    <select class="form-control" name="location_id" style="height: 100%; min-height: 42px;">
+                <div style="flex: 1; min-width: 130px; max-width: 200px; height: 42px;">
+                    <select class="form-control" name="location_id">
                         <option value="">All Locations</option>
                         @foreach($locations as $loc)
                             <option value="{{ $loc->id }}" @if(request('location_id') == $loc->id) selected @endif>{{ $loc->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                <!-- Date Range -->
-                <div class="col-md-5 d-flex align-items-center mb-2 mb-md-0">
-                    <div class="mr-3 d-flex align-items-center">
-                        <span class="text-muted mr-2 small font-weight-bold text-uppercase">From:</span>
-                        <input type="date" class="ui-select bg-white" name="from_date" value="{{old('from_date', request('from_date'))}}" />
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <span class="text-muted mr-2 small font-weight-bold text-uppercase">To:</span>
-                        <input type="date" class="ui-select bg-white" name="to_date" value="{{old('to_date', request('to_date'))}}" />
-                    </div>
+                
+                <!-- FROM Date -->
+                <div style="flex: 1; min-width: 130px; max-width: 180px; height: 42px;">
+                    <input type="date" class="form-control bg-white w-100" name="from_date" value="{{old('from_date', request('from_date'))}}" title="From Date" style="height: 100%; border-radius: 8px; border: 1px solid #e2e8f0;" />
                 </div>
-                <!-- Buttons -->
-                <div class="col-md-4 d-flex justify-content-md-end align-items-center">
-                    <button type="submit" name="action" value="filter" class="btn ui-btn ui-btn-primary mr-2">
-                        <i class="fas fa-filter mr-1"></i> Filter
-                    </button>
-                    <a href="{{ url('admin/employees/attendance') }}" class="btn ui-btn btn-light px-3 mr-2" title="Reset Filters"><i class="fas fa-undo text-secondary"></i></a>
-                    <button type="submit" name="export" value="1" class="btn ui-btn btn-light border">
-                        <i class="fas fa-file-export mr-1"></i> Export
-                    </button>
+                
+                <!-- TO Date -->
+                <div style="flex: 1; min-width: 130px; max-width: 180px; height: 42px;">
+                    <input type="date" class="form-control bg-white w-100" name="to_date" value="{{old('to_date', request('to_date'))}}" title="To Date" style="height: 100%; border-radius: 8px; border: 1px solid #e2e8f0;" />
                 </div>
+            </div>
+            
+            <!-- Row 3: Action Buttons -->
+            <div class="d-flex flex-wrap align-items-center justify-content-end w-100" style="gap: 10px;">
+                <button type="submit" name="action" value="filter" class="btn ui-btn text-white shadow-sm" style="background-color: #3b82f6; height: 42px; padding: 0 24px; border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-filter mr-2"></i> Filter
+                </button>
+                <a href="{{ url('admin/employees/attendance') }}" class="btn ui-btn text-secondary shadow-sm" title="Reset Filters" style="background-color: #f8fafc; height: 42px; width: 42px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: none;">
+                    <i class="fas fa-undo"></i>
+                </a>
+                <button type="submit" name="export" value="1" class="btn ui-btn text-dark shadow-sm bg-white" style="height: 42px; padding: 0 20px; border-radius: 8px; border: 1px solid #e2e8f0; font-weight: 600;">
+                    <i class="fas fa-file-export mr-2"></i> Export
+                </button>
             </div>
         </form>
     </div>

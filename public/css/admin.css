@@ -83,6 +83,7 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
 /* Main Content Area */
 .admin-main {
     flex: 1;
+    min-width: 0;
     margin-left: 260px; /* Offset for fixed sidebar */
     margin-top: 70px; /* Offset for fixed topbar */
     display: flex;
@@ -276,12 +277,6 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     }
 }
 
-/* Custom Scrollbar - Hidden */
-::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    background: transparent;
-}
 
 /* Dashboard KPI Cards (White Style) */
 .kpi-card-white {

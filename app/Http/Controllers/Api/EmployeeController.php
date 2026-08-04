@@ -18,6 +18,14 @@ class EmployeeController extends \App\Http\Controllers\Controller
 
     public function details(Request $req) 
     {
+        if (\Auth::user()->type == 'salesman') {
+            $row = \Auth::user()->employee ?: Employee::where('employee_id', \Auth::user()->employee_id)->first();
+            if (!$row) {
+                $row = \Auth::user()->employees()->first();
+            }
+            return $row;
+        }
+
         $row = \Auth::user()->employees()->wherePersonId($req->get('person_id'))->first();
         return $row;
     }
@@ -121,6 +129,15 @@ class EmployeeController extends \App\Http\Controllers\Controller
         {
             return errRes($validator->errors()->toArray());
         }
+
+        if (isset($data['lat']) && isset($data['lng']) && is_numeric($data['lat']) && is_numeric($data['lng'])) {
+            if (!$this->validateGeofence($data['lat'], $data['lng'])) {
+                return response()->json([
+                    'message'=>'You are outside the allowed geofence area',
+                    'errors'=>[]
+                ], 422);
+            }
+        }
         
         $employee = false;
         if($data['entry_type'] == 0)
@@ -182,17 +199,19 @@ class EmployeeController extends \App\Http\Controllers\Controller
             ], 422);
         }
 
-        $data['address'] = null;
+        $data['address'] = $req->input('address', null);
         if($data['lat'] && !is_numeric($data['lat']))
         {
-            $data['address'] = $data['lat'];
+            if (!$data['address']) {
+                $data['address'] = $data['lat'];
+            }
             $data['lat'] = null;            
         }
         
         $idata = [
             'employee_id'=>$employee->id,
             'type'=>0,
-            'entry_type'=>$data['entry_type'],
+            'entry_type'=>0,
             'lat'=>$data['lat'],
             'lng'=>$data['lng'],
             'address'=>$data['address'],
@@ -233,6 +252,15 @@ class EmployeeController extends \App\Http\Controllers\Controller
             return errRes($validator->errors()->toArray());
         }
 
+        if (isset($data['lat']) && isset($data['lng']) && is_numeric($data['lat']) && is_numeric($data['lng'])) {
+            if (!$this->validateGeofence($data['lat'], $data['lng'])) {
+                return response()->json([
+                    'message'=>'You are outside the allowed geofence area',
+                    'errors'=>[]
+                ], 422);
+            }
+        }
+
         $employee = false;
         if($data['entry_type'] == 0)
             $employee = \Auth::user()->employees()->wherePersonId($data['person_id'])->first();
@@ -269,17 +297,19 @@ class EmployeeController extends \App\Http\Controllers\Controller
             ], 422);
         }
 
-        $data['address'] = null;
+        $data['address'] = $req->input('address', null);
         if($data['lat'] && !is_numeric($data['lat']))
         {
-            $data['address'] = $data['lat'];
+            if (!$data['address']) {
+                $data['address'] = $data['lat'];
+            }
             $data['lat'] = null;            
         }
         
         $idata = [
             'employee_id'=>$employee->id,
             'type'=>1,
-            'entry_type'=>$data['entry_type'],
+            'entry_type'=>0,
             'lat'=>$data['lat'],
             'lng'=>$data['lng'],
             'address'=>$data['address'],
@@ -301,3 +331,5 @@ class EmployeeController extends \App\Http\Controllers\Controller
         ]);
     }
 }
+
+

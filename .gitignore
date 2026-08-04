@@ -1,7 +1,19 @@
 /node_modules
 /public/hot
 /public/storage
+/public/uploads/employee_attendance/*
+/public/uploads/meeting_attendance/*
+!/public/uploads/employee_attendance/.gitkeep
+!/public/uploads/meeting_attendance/.gitkeep
 /storage/*.key
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
 /vendor
 .env
 .env.backup
@@ -10,3 +22,7 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+*.bak
+tail.txt
+test.php
+update_attendance.php

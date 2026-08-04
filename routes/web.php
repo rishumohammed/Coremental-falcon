@@ -128,6 +128,13 @@ Route::group([
     }); 
 
     Route::group([
+        'prefix'=>'notifications'
+    ], function(){
+        Route::get('/', 'NotificationController@index');        
+        Route::post('/clear', 'NotificationController@clear')->name('notifications.clear');
+    }); 
+
+    Route::group([
         'prefix'=>'shifts'
     ], function(){
         Route::get('/', 'ShiftController@index');        
@@ -156,6 +163,8 @@ Route::group([
         Route::get('/absent', 'ReportController@absent');
         Route::get('/leaves', 'ReportController@leaves');
         Route::get('/missing-checkouts', 'ReportController@missingCheckouts');
+        Route::get('/manual-entry', 'ReportController@manualEntry');
+        Route::post('/manual-checkin', 'ReportController@addManualCheckin');
         Route::post('/manual-checkout', 'ReportController@addManualCheckout');
         Route::post('/assign-leave', 'ReportController@assignLeave');
     });

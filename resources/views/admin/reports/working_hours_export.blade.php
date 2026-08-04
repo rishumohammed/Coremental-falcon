@@ -5,6 +5,7 @@
             <th>Employee ID</th>
             <th>Employee Name</th>
             <th>Department</th>
+            <th>Division</th>
             <th>Designation</th>
             <th>Shift Type</th>
             <th>Location</th>
@@ -13,6 +14,7 @@
                 <th>Check Out</th>
             @endif
             <th>Total Hours</th>
+            <th>Total Break</th>
             <th>Status</th>
         </tr>
     </thead>
@@ -34,6 +36,7 @@
                 <td rowspan="{{ $pairsCount }}">{{ $row->employee->employee_id }}</td>
                 <td rowspan="{{ $pairsCount }}">{{ $row->employee->name }}</td>
                 <td rowspan="{{ $pairsCount }}">{{ $row->employee->department->name ?? '' }}</td>
+                <td rowspan="{{ $pairsCount }}">{{ $row->employee->division->name ?? '' }}</td>
                 <td rowspan="{{ $pairsCount }}">{{ $row->employee->designation->name ?? '' }}</td>
                 <td rowspan="{{ $pairsCount }}">{{ $row->employee->shift->name ?? '' }}</td>
                 <td rowspan="{{ $pairsCount }}">{{ $row->employee->location->name ?? '' }}</td>
@@ -46,6 +49,7 @@
             
             @if($index === 0)
                 <td rowspan="{{ $pairsCount }}">{{ $row->formatted_time }}</td>
+                <td rowspan="{{ $pairsCount }}">{{ $row->formatted_break_time }}</td>
                 <td rowspan="{{ $pairsCount }}">{{ $row->status }}</td>
             @endif
         </tr>
@@ -54,8 +58,9 @@
         
         @if(isset($grandTotalMinutes))
         <tr>
-            <td colspan="{{ (isset($rows[0]) && $rows[0]->view_type == 'daily') ? '9' : '7' }}" style="text-align: right; font-weight: bold;">Grand Total</td>
+            <td colspan="{{ (isset($rows[0]) && $rows[0]->view_type == 'daily') ? '10' : '8' }}" style="text-align: right; font-weight: bold;">Grand Total</td>
             <td style="font-weight: bold;">{{ sprintf('%02d:%02d', floor($grandTotalMinutes / 60), $grandTotalMinutes % 60) }}</td>
+            <td style="font-weight: bold;">{{ isset($grandTotalBreakMinutes) ? sprintf('%02d:%02d', floor($grandTotalBreakMinutes / 60), $grandTotalBreakMinutes % 60) : '' }}</td>
             <td></td>
         </tr>
         @endif

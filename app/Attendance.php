@@ -24,7 +24,10 @@ class Attendance extends Model
 
     function getEntryTypeLabelAttribute()
     {
-        return $this->entry_type==0?'Automatic':'Manual';
+        if ($this->entry_type == 1) {
+            return $this->type == 0 ? 'Manual by Admin' : 'Manual';
+        }
+        return 'Automatic';
     }
 
     function getPhotoUrlAttribute()

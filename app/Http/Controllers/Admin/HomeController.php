@@ -43,11 +43,17 @@ class HomeController extends \App\Http\Controllers\Controller
             ->orderBy('created_at', 'asc')
             ->get();
             
-        $employees = \App\Employee::select('id', 'name', 'employee_id')->where('is_locked', false)->get()->keyBy('id');
+        // Load employees with their shift relationship for shift-aware evaluation
+        $employees = \App\Employee::select('id', 'name', 'employee_id', 'shift_id')
+            ->where('is_locked', false)
+            ->with('shift')
+            ->get()
+            ->keyBy('id');
 
+        $tz = timezone();
         $grouped = [];
         foreach ($attendances as $log) {
-            $dateKey = date('Y-m-d', strtotime($log->created_at->timezone(timezone())));
+            $dateKey = $log->created_at->timezone($tz)->format('Y-m-d');
             $empId = $log->employee_id;
             
             if (!isset($grouped[$dateKey])) {
@@ -65,17 +71,16 @@ class HomeController extends \App\Http\Controllers\Controller
                 if (!isset($employees[$empId])) continue;
 
                 $checkInTime = null;
-                $status = 'Complete';
                 $pairs = [];
 
                 foreach ($logs as $log) {
-                    $logTime = date('Y-m-d H:i:s', strtotime($log->created_at->timezone(timezone())));
-                    if ($log->type == 0) {
+                    $logTime = $log->created_at->timezone($tz)->format('Y-m-d H:i:s');
+                    if ($log->type == 0) { // Check-In
                         if ($checkInTime !== null) {
                             $pairs[] = ['in' => $checkInTime, 'out' => null];
                         }
                         $checkInTime = $logTime;
-                    } else if ($log->type == 1) {
+                    } else if ($log->type == 1) { // Check-Out
                         if ($checkInTime !== null) {
                             $pairs[] = ['in' => $checkInTime, 'out' => $logTime];
                             $checkInTime = null;
@@ -85,28 +90,19 @@ class HomeController extends \App\Http\Controllers\Controller
                     }
                 }
 
-                foreach ($pairs as $p) {
-                    if ($p['in'] !== null && $p['out'] === null) {
-                        $status = 'Missing Checkout';
-                    } else if ($p['in'] === null && $p['out'] !== null) {
-                        $status = ($status == 'Missing Checkout') ? 'Incomplete Logs' : 'Missing Check-In';
-                    }
-                }
-
-                if ($checkInTime !== null && $status == 'Complete') {
-                    $status = 'Missing Checkout';
+                // Append any open check-in with no matching check-out
+                if ($checkInTime !== null) {
                     $pairs[] = ['in' => $checkInTime, 'out' => null];
                 }
 
-                if ($status === 'Missing Checkout' || $status === 'Incomplete Logs') {
-                    foreach ($pairs as $index => $p) {
-                        if ($p['in'] !== null && $p['out'] === null) {
-                            $missingRecords[] = (object) [
-                                'date' => $dateKey,
-                                'employee' => $employees[$empId],
-                                'check_in_time' => $p['in']
-                            ];
-                        }
+                $employeeObj = $employees[$empId];
+                foreach ($pairs as $p) {
+                    if ($this->isPairMissingCheckout($dateKey, $p, $employeeObj)) {
+                        $missingRecords[] = (object) [
+                            'date'           => $dateKey,
+                            'employee'       => $employeeObj,
+                            'check_in_time'  => $p['in']
+                        ];
                     }
                 }
             }
@@ -142,7 +138,7 @@ class HomeController extends \App\Http\Controllers\Controller
                 ->distinct('employee_id')
                 ->count('employee_id');
             $attendanceTrend[] = [
-                'date' => date('M d', strtotime($date)),
+                'date'  => date('M d', strtotime($date)),
                 'count' => $count
             ];
         }
@@ -156,5 +152,60 @@ class HomeController extends \App\Http\Controllers\Controller
             ->get();
 
         return view('home', compact('metrics', 'attendanceTrend', 'departmentDistribution', 'latestMissingCheckouts'));
+    }
+
+    /**
+     * Determine if an open (no check-out) attendance pair should be flagged as a Missing Checkout.
+     *
+     * Rules:
+     * 1. Without shift: Flagged only when the check-in calendar day is completed (today > checkInDate).
+     * 2. With shift: Flagged only when BOTH conditions are met:
+     *    - Condition A: Current server datetime >= Shift End datetime (shift is completed).
+     *    - Condition B: Current server date > Shift End date (calendar day of shift end is completed).
+     *
+     * @param string $dateKey   Attendance date (Y-m-d).
+     * @param array  $pair      ['in' => 'Y-m-d H:i:s'|null, 'out' => 'Y-m-d H:i:s'|null]
+     * @param mixed  $employee  Employee model with 'shift' relation eager-loaded.
+     * @return bool
+     */
+    private function isPairMissingCheckout(string $dateKey, array $pair, $employee): bool
+    {
+        // Only flag open pairs (has check-in, no check-out)
+        if ($pair['in'] === null || $pair['out'] !== null) {
+            return false;
+        }
+
+        $tz = timezone();
+        $now = now()->timezone($tz);
+        $today = $now->format('Y-m-d');
+
+        $shift = $employee->shift ?? null;
+
+        if ($shift && $shift->end_time && $shift->start_time) {
+            $startTime = \Carbon\Carbon::createFromFormat('H:i:s', $shift->start_time, $tz);
+            $endTime   = \Carbon\Carbon::createFromFormat('H:i:s', $shift->end_time,   $tz);
+
+            // Anchored shift end datetime for this attendance check-in date
+            $shiftEnd = \Carbon\Carbon::parse($dateKey . ' ' . $shift->end_time, $tz);
+
+            // Handle overnight shifts (e.g. 20:00 to 08:00 → shift ends next calendar day)
+            if ($endTime->lte($startTime)) {
+                $shiftEnd->addDay();
+            }
+
+            $shiftEndDate = $shiftEnd->format('Y-m-d');
+
+            // Condition A: Shift must be completed
+            $isShiftCompleted = $now->gte($shiftEnd);
+
+            // Condition B: Calendar day of shift end must be completed
+            $isCalendarDayCompleted = ($today > $shiftEndDate);
+
+            // Both conditions must be satisfied
+            return ($isShiftCompleted && $isCalendarDayCompleted);
+        }
+
+        // Without shift: Calendar day of check-in must be completed (today > check-in date)
+        return ($today > $dateKey);
     }
 }

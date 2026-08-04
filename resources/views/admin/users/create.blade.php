@@ -66,6 +66,22 @@
                         </div>
 
                         <div class="form-group row">
+                            <label for="geo_radius" class="col-md-4 col-form-label text-md-right">{{ __('Geo Radius (m)') }}</label>
+
+                            <div class="col-md-6">
+                                <input id="geo_radius" type="number" 
+                                class="form-control @error('geo_radius') is-invalid @enderror" 
+                                name="geo_radius" value="{{ old('geo_radius') }}" min="1" placeholder="Leave blank for default">
+
+                                @error('geo_radius')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
                             <label for="username" class="col-md-4 col-form-label text-md-right">{{ __('Username') }}</label>
 
                             <div class="col-md-6">
@@ -136,16 +152,18 @@
                         </div>
 
                         <div class="form-group row" id="div-salesman" style="display:none" >
-                            <label for="name" class="col-md-4 col-form-label text-md-right">{{ __('Employee ID') }}</label>
+                            <label for="employee_id" class="col-md-4 col-form-label text-md-right">{{ __('Employee') }}</label>
 
                             <div class="col-md-6">
                                 <select id="employee_id"
                                 class="form-control @error('employee_id') is-invalid @enderror" name="employee_id" 
-                                value="{{ old('employee_id') }}" required>
-                                    <option value="" >Select</option>
-                                @foreach($employee_ids as $eid)
-                                    <option>{{$eid}}</option>
-                                @endforeach
+                                required>
+                                    <option value="" >Select Employee</option>
+                                    @foreach($employees as $emp)
+                                    <option value="{{ $emp->employee_id }}" {{ old('employee_id') == $emp->employee_id ? 'selected' : '' }}>
+                                        {{ $emp->employee_id }} - {{ $emp->name }}
+                                    </option>
+                                    @endforeach
                                 </select>
 
                                 @error('employee_id')

@@ -44,8 +44,8 @@ class UserController extends \App\Http\Controllers\Controller
 
     public function create()
     {
-        $employee_ids = Employee::pluck('employee_id');
-        return view('admin.users.create', compact('employee_ids'));
+        $employees = Employee::orderBy('name')->get(['id', 'employee_id', 'name']);
+        return view('admin.users.create', compact('employees'));
     }
 
     public function store(Request $req)
@@ -54,6 +54,7 @@ class UserController extends \App\Http\Controllers\Controller
             'name' => ['required', 'string', 'max:255'],
             'location' => ['nullable'],
             'geo_location' => ['nullable', 'regex:/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?),[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/'],
+            'geo_radius' => ['nullable', 'integer', 'min:1'],
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'type' => ['required', 'in:general,salesman'],
             'password' => ['required', 'string', 'min:8', 'confirmed']
@@ -70,12 +71,14 @@ class UserController extends \App\Http\Controllers\Controller
         $data['password'] = \Hash::make($data['password']);
         $row = User::create($data);
 
-        /*Employee::create([
-            'employee_id' => $row->employee_id,
-            'name' => $row->name,
-            'is_locked' => false,
-            'is_salesman' => true
-        ]);*/
+        if($row->type == 'salesman' && $row->employee_id)
+        {
+            $employee = Employee::where('employee_id', $row->employee_id)->first();
+            if($employee) {
+                $employee->update(['is_salesman' => true]);
+                $row->employees()->sync([$employee->id]);
+            }
+        }
 
         return redirect('admin/users')->with('status', 'User added successfully');
     }
@@ -85,34 +88,30 @@ class UserController extends \App\Http\Controllers\Controller
         if($row->type == 'admin')
             abort(404);
 
-        $employee_ids = Employee::pluck('employee_id');
+        $employees = Employee::orderBy('name')->get(['id', 'employee_id', 'name']);
 
-        return view('admin.users.edit', compact('row', 'employee_ids'));
+        return view('admin.users.edit', compact('row', 'employees'));
     }
 
     public function update(Request $req, User $row)
     {
-        $employee = Employee::whereEmployeeId($row->employee_id)->first();
-
-        $employee_row_id = $employee?$employee->id:0;
-
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'location' => ['nullable'],
             'geo_location' => ['nullable', 'regex:/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?),[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/'],
+            'geo_radius' => ['nullable', 'integer', 'min:1'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$row->id],            
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'is_locked' => 'in:0,1'
         ];
 
-        if($employee && $employee->type == 'salesman')
+        if($row->type == 'salesman')
         {
-            $rules['employee_id'] = ['required', 'unique:employees,employee_id,'.$employee->id];
+            $rules['employee_id'] = ['required', 'unique:users,employee_id,'.$row->id];
         }
 
         $data = $req->validate($rules);
        
-
         if($data['password'])
         {
             unset($data['password_confirmation']);
@@ -126,10 +125,14 @@ class UserController extends \App\Http\Controllers\Controller
         
         $row->update($data);
 
-        /*$row->employee()->update([
-            'employee_id' => $row->employee_id,
-            'name' => $row->name
-        ]);*/
+        if($row->type == 'salesman' && $row->employee_id)
+        {
+            $employee = Employee::where('employee_id', $row->employee_id)->first();
+            if($employee) {
+                $employee->update(['is_salesman' => true]);
+                $row->employees()->sync([$employee->id]);
+            }
+        }
 
         return redirect('admin/users')->with('status', 'User updated successfully');
     }

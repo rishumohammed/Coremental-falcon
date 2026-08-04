@@ -50,8 +50,16 @@
                     @foreach($rows as $row)
                     <div class="form-group mb-4">
                         <label class="font-weight-bold text-dark">{{$row->label}}</label>
-                        <input type='text' class="form-control" style="background-color: #f8fafc; border: 1px solid #e5e7eb; font-size: 0.95rem; padding: 0.75rem 1rem;" 
-                            name='val[{{$row->id}}]' value='{{$row->val}}' />
+                        @if($row->key == 'timezone')
+                            <select class="form-control" style="background-color: #f8fafc; border: 1px solid #e5e7eb; font-size: 0.95rem; padding: 0.75rem 1rem;" name="val[{{$row->id}}]">
+                                @foreach(timezone_identifiers_list() as $tz)
+                                    <option value="{{ $tz }}" {{ $row->val == $tz ? 'selected' : '' }}>{{ $tz }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <input type='text' class="form-control" style="background-color: #f8fafc; border: 1px solid #e5e7eb; font-size: 0.95rem; padding: 0.75rem 1rem;" 
+                                name='val[{{$row->id}}]' value='{{$row->val}}' />
+                        @endif
                     </div>
                     @endforeach
                     <div class="mt-4 border-top pt-4 text-right">
