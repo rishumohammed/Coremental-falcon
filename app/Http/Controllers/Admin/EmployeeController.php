@@ -53,7 +53,12 @@ class EmployeeController extends \App\Http\Controllers\Controller
             $rows->where('location_id', $req->location_id);
         }
 
-        $rows = $rows->paginate(50);
+        $perPage = (int) $req->get('per_page', 25);
+        if (!in_array($perPage, [25, 50, 100])) {
+            $perPage = 25;
+        }
+
+        $rows = $rows->orderBy('employees.id', 'ASC')->paginate($perPage);
         $departments = \Cache::rememberForever('departments', fn() => \App\Department::all());
         $divisions = \Cache::rememberForever('divisions', fn() => \App\Division::all());
         $designations = \Cache::rememberForever('designations', fn() => \App\Designation::all());
@@ -202,7 +207,11 @@ class EmployeeController extends \App\Http\Controllers\Controller
 
         if(!$req->export)
         {
-            $rows = $rows->orderBy('id', 'DESC')->paginate(100);
+            $perPage = (int) $req->get('per_page', 25);
+            if (!in_array($perPage, [25, 50, 100])) {
+                $perPage = 25;
+            }
+            $rows = $rows->orderBy('id', 'DESC')->paginate($perPage);
             return view('admin.employees.attendance', compact('rows', 'employees', 'departments', 'designations', 'shifts', 'locations', 'divisions', 'adminUsers'));
         }
         else
@@ -242,4 +251,92 @@ class EmployeeController extends \App\Http\Controllers\Controller
         $block->delete();
         return back()->with('status', 'Block removed successfully.');
     }
+
+    public function export(Request $req)
+    {
+        $query = Employee::query()->with(['department', 'division', 'designation', 'shift', 'location']);
+
+        if ($req->search) {
+            $query->where(function($q) use ($req) {
+                $q->where('employees.name', 'like', "%{$req->search}%")
+                  ->orWhere('employees.employee_id', 'like', "%{$req->search}%")
+                  ->orWhere('employees.person_id', 'like', "%{$req->search}%")
+                  ->orWhereHas('department', function($q2) use ($req) {
+                      $q2->where('departments.name', 'like', "%{$req->search}%");
+                  });
+            });
+        }
+
+        if ($req->has('status') && $req->status != '') {
+            $query->where('is_locked', $req->status);
+        }
+
+        if ($req->has('department_id') && $req->department_id != '') {
+            $query->where('department_id', $req->department_id);
+        }
+
+        if ($req->has('division_id') && $req->division_id != '') {
+            $query->where('division_id', $req->division_id);
+        }
+
+        if ($req->has('designation_id') && $req->designation_id != '') {
+            $query->where('designation_id', $req->designation_id);
+        }
+
+        if ($req->has('shift_id') && $req->shift_id != '') {
+            $query->where('shift_id', $req->shift_id);
+        }
+
+        if ($req->has('location_id') && $req->location_id != '') {
+            $query->where('location_id', $req->location_id);
+        }
+
+        $employees = $query->orderBy('id', 'ASC')->get();
+
+        $fileName = 'employees_export_' . date('Y-m-d_H-i') . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\EmployeesExport($employees), $fileName);
+    }
+
+    public function downloadSample()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\EmployeeSampleExport(), 'employee_import_sample.xlsx');
+    }
+
+    public function import(Request $req)
+    {
+        $req->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+        ], [
+            'file.required' => 'Please select an Excel or CSV file to import.',
+            'file.mimes' => 'Only .xlsx, .xls, and .csv files are supported.',
+            'file.max' => 'The file size must not exceed 10 MB.'
+        ]);
+
+        try {
+            $import = new \App\Imports\EmployeesImport();
+            \Maatwebsite\Excel\Facades\Excel::import($import, $req->file('file'));
+
+            $msg = "Import Completed! ";
+            if ($import->successCount > 0) {
+                $msg .= "{$import->successCount} new employee(s) added. ";
+            }
+            if ($import->updatedCount > 0) {
+                $msg .= "{$import->updatedCount} employee(s) updated. ";
+            }
+            if ($import->skippedCount > 0) {
+                $msg .= "{$import->skippedCount} row(s) skipped due to missing data. ";
+            }
+
+            if (!empty($import->errors)) {
+                return redirect('admin/employees')
+                    ->with('status', $msg)
+                    ->with('error', 'Warnings during import: ' . implode(' ', array_slice($import->errors, 0, 5)));
+            }
+
+            return redirect('admin/employees')->with('status', $msg);
+        } catch (\Exception $e) {
+            return redirect('admin/employees')->with('error', 'Failed to process import file: ' . $e->getMessage());
+        }
+    }
 }
+

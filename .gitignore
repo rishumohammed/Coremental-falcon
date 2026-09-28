@@ -23,6 +23,12 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 *.bak
-tail.txt
+*.sql
+*.xlsx
+*.txt
+faceppnew
+~$*
 test.php
+test_emp.php
 update_attendance.php
+

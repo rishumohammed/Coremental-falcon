@@ -41,6 +41,9 @@ Route::group([
         Route::get('/blocks/delete/{block}', 'EmployeeController@deleteBlock');
 
         Route::get('/attendance', 'EmployeeController@attendance');
+        Route::get('/export', 'EmployeeController@export');
+        Route::get('/sample-format', 'EmployeeController@downloadSample');
+        Route::post('/import', 'EmployeeController@import');
     }); 
     
     Route::group([
@@ -173,7 +176,6 @@ Route::group([
 
 
 Route::get('/install5432', function(){
-    define('STDIN',fopen("php://stdin","r"));
     //\Artisan::call('migrate:refresh', ['--path'=>'database/migrations/2020_10_07_062828_create_meeting_attendances_table.php']);
     //\Artisan::call('migrate:refresh', ['--path'=>'database/migrations/2020_09_27_192122_create_attendances_table.php']);
     //\Artisan::call('migrate:refresh', ['--path'=>'database/migrations/2020_10_01_191234_create_settings_table.php']);

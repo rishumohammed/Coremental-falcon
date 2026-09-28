@@ -108,8 +108,23 @@
                 </tbody>
             </table>
         </div>
-        <div class="p-3 border-top">
-            {{$rows->render()}}
+        <div class="p-3 border-top d-flex flex-wrap justify-content-between align-items-center bg-light" style="gap: 12px;">
+            <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                <span class="text-muted small">
+                    Showing {{ $rows->firstItem() ?? 0 }} to {{ $rows->lastItem() ?? 0 }} of {{ $rows->total() }} entries
+                </span>
+                <div class="d-inline-flex align-items-center ml-sm-3">
+                    <label class="text-muted small mb-0 mr-2 font-weight-bold">Show:</label>
+                    <select class="custom-select custom-select-sm no-select2" style="width: auto; height: 32px; font-size: 0.85rem;" onchange="changePerPage(this.value)">
+                        <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25 rows</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 rows</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 rows</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                {{ $rows->appends(request()->all())->render() }}
+            </div>
         </div>
     </div>
 </div>

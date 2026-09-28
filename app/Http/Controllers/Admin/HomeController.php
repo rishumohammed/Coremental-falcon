@@ -26,7 +26,7 @@ class HomeController extends \App\Http\Controllers\Controller
         $today = date('Y-m-d');
         $yesterday = date('Y-m-d', strtotime('-1 day'));
 
-        $totalEmployees = \App\Employee::where('is_locked', false)->count();
+        $totalEmployees = \App\Employee::count();
 
         // Calculate Present Today (unique employees checked in today)
         $presentToday = \App\Attendance::where('created_at', '>=', $today . ' 00:00:00')
@@ -43,9 +43,7 @@ class HomeController extends \App\Http\Controllers\Controller
             ->orderBy('created_at', 'asc')
             ->get();
             
-        // Load employees with their shift relationship for shift-aware evaluation
         $employees = \App\Employee::select('id', 'name', 'employee_id', 'shift_id')
-            ->where('is_locked', false)
             ->with('shift')
             ->get()
             ->keyBy('id');
@@ -143,12 +141,10 @@ class HomeController extends \App\Http\Controllers\Controller
             ];
         }
 
-        // 2. Department Distribution
         $departmentDistribution = \DB::table('employees')
             ->join('departments', 'employees.department_id', '=', 'departments.id')
-            ->where('employees.is_locked', false)
             ->select('departments.name', \DB::raw('count(*) as total'))
-            ->groupBy('department_id', 'departments.name')
+            ->groupBy('employees.department_id', 'departments.name')
             ->get();
 
         return view('home', compact('metrics', 'attendanceTrend', 'departmentDistribution', 'latestMissingCheckouts'));

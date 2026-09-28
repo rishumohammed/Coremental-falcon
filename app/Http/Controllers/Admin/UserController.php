@@ -34,7 +34,12 @@ class UserController extends \App\Http\Controllers\Controller
             $rows->where('location', 'like', "%{$req->location}%");
         }
         
-        $rows = $rows->paginate(50);
+        $perPage = (int) $req->get('per_page', 25);
+        if (!in_array($perPage, [25, 50, 100])) {
+            $perPage = 25;
+        }
+
+        $rows = $rows->orderBy('id', 'ASC')->paginate($perPage);
         
         $roles = User::where('type', '!=', 'admin')->distinct()->pluck('type');
         $locations = User::where('type', '!=', 'admin')->whereNotNull('location')->where('location', '!=', '')->distinct()->pluck('location');
@@ -163,11 +168,16 @@ class UserController extends \App\Http\Controllers\Controller
         $rows = $row->employees();
         if ($req->search) {
             $rows->where(function($q) use ($req) {
-                $q->where('name', 'like', "%{$req->search}%")
-                  ->orWhere('employee_id', 'like', "%{$req->search}%");
+                $q->where('employees.name', 'like', "%{$req->search}%")
+                  ->orWhere('employees.employee_id', 'like', "%{$req->search}%");
             });
         }
-        $rows = $rows->paginate(50);
+        $perPage = (int) $req->get('per_page', 25);
+        if (!in_array($perPage, [25, 50, 100])) {
+            $perPage = 25;
+        }
+
+        $rows = $rows->orderBy('employees.id', 'ASC')->paginate($perPage);
         
         return view('admin.users.assigned-employees.index', compact('user', 'rows',  'unassigned_employees'));
     }
@@ -178,16 +188,16 @@ class UserController extends \App\Http\Controllers\Controller
             'employee_ids' => ['required', 'array']
         ]);
 
-        $user->employees()->attach($data['employee_ids']);
+        $user->employees()->syncWithoutDetaching($data['employee_ids']);
         
         return redirect('admin/users/'.$user->id.'/assigned-employees')->with('status', 'Employee assigned successfully');
     }
 
     public function unassignEmployee(User $user, $employee_id)
     {
-        $user->employees()->detach(['employee_id'=>$employee_id]);
+        $user->employees()->detach($employee_id);
         
-        return redirect('admin/users/'.$user->id.'/assigned-employees')->with('status', 'Employee assignement deleted successfully');
+        return redirect('admin/users/'.$user->id.'/assigned-employees')->with('status', 'Employee assignment deleted successfully');
     }
 
 }

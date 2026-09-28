@@ -5,8 +5,18 @@
 @section('content')
 <div class="container-fluid pt-2">
     <!-- Header Area -->
-    <div class="d-flex justify-content-end align-items-center mb-3">
-        <div>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap: 10px;">
+        <h4 class="font-weight-bold text-dark mb-0">Employee Catalog</h4>
+        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+            <a href="{{ url('admin/employees/sample-format') }}" class="btn btn-outline-secondary" title="Download Sample Excel Import Template">
+                <i class="fas fa-file-download mr-1"></i> Sample Format
+            </a>
+            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#importEmployeeModal" title="Import Employees from Excel/CSV">
+                <i class="fas fa-file-upload mr-1"></i> Import
+            </button>
+            <a href="{{ url('admin/employees/export?' . http_build_query(request()->all())) }}" class="btn btn-outline-success" title="Export Filtered/All Employees to Excel">
+                <i class="fas fa-file-excel mr-1"></i> Export
+            </a>
             <a href="{{url('admin/employees/create')}}" class="btn ui-btn ui-btn-primary">
                 <i class="fas fa-plus mr-1"></i> Add Employee
             </a>
@@ -46,7 +56,7 @@
                 <div class="col-md-2 mb-2 mb-md-0">
                     <select class="form-control" name="status" style="height: 100%; min-height: 42px;">
                         <option value=''>All Status</option>
-                        <option value='0' @if(request('status') === '0') selected @endif>Active</option>
+                        <option value='0' @if(request('status') === '0') selected @endif>Open</option>
                         <option value='1' @if(request('status') === '1') selected @endif>Locked</option>
                     </select>
                 </div>
@@ -120,7 +130,7 @@
             <table class="table table-ui mb-0" style="min-width: 1400px;">
                 <thead>
                     <tr>
-                        <th style="width: 80px;">Photo</th>
+                        <th style="width: 50px;">Photo</th>
                         <th style="min-width: 200px;">Employee</th>
                         <th style="min-width: 150px;">Department</th>
                         <th style="min-width: 150px;">Division</th>
@@ -137,8 +147,8 @@
                 @foreach($rows as $row)
                 <tr>
                     <td>
-                        <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:80px; height:80px; border: 1px dashed #cbd5e1;">
-                            <i class="fas fa-user text-black-50 fa-lg"></i>
+                        <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:38px; height:38px; border: 1px dashed #cbd5e1;">
+                            <i class="fas fa-user text-black-50" style="font-size: 0.9rem;"></i>
                         </div>
                     </td>
                     <td>
@@ -186,9 +196,9 @@
                     </td>
                     <td>
                         @if($row->is_locked)
-                            <span class="badge badge-danger">Locked</span>
+                            <span class="badge badge-secondary"><i class="fas fa-lock mr-1"></i> Locked</span>
                         @else
-                            <span class="badge badge-success">Active</span>
+                            <span class="badge badge-success"><i class="fas fa-lock-open mr-1"></i> Open</span>
                         @endif
                     </td>
                     <td>
@@ -229,9 +239,85 @@
                 </tbody>
             </table>
         </div>
-        <div class="p-3 border-top">
-            {{$rows->render()}}
+        <div class="p-3 border-top d-flex flex-wrap justify-content-between align-items-center bg-light" style="gap: 12px;">
+            <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                <span class="text-muted small">
+                    Showing {{ $rows->firstItem() ?? 0 }} to {{ $rows->lastItem() ?? 0 }} of {{ $rows->total() }} entries
+                </span>
+                <div class="d-inline-flex align-items-center ml-sm-3">
+                    <label class="text-muted small mb-0 mr-2 font-weight-bold">Show:</label>
+                    <select class="custom-select custom-select-sm no-select2" style="width: auto; height: 32px; font-size: 0.85rem;" onchange="changePerPage(this.value)">
+                        <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25 rows</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 rows</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 rows</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                {{ $rows->appends(request()->all())->render() }}
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Import Employee Modal -->
+<div class="modal fade" id="importEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="importEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold" id="importEmployeeModalLabel">
+                    <i class="fas fa-file-import mr-1"></i> Import Employees
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url('admin/employees/import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="alert alert-info py-2 px-3 small mb-3">
+                        <i class="fas fa-info-circle mr-1"></i> <strong>Instructions:</strong>
+                        <ul class="mb-1 pl-3 mt-1">
+                            <li>Supported formats: <strong>.xlsx, .xls, .csv</strong></li>
+                            <li>Required columns: <strong>Employee ID</strong> and <strong>Name</strong>.</li>
+                            <li>Existing Employee IDs will be updated; new ones will be inserted.</li>
+                            <li>Departments, Divisions, Designations, Shifts, and Locations will be automatically matched or created.</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold text-dark mb-1">Select File <span class="text-danger">*</span></label>
+                        <div class="custom-file">
+                            <input type="file" name="file" class="custom-file-input" id="employeeImportFile" accept=".xlsx, .xls, .csv" required onchange="updateFileName(this)">
+                            <label class="custom-file-label" for="employeeImportFile" id="employeeImportFileLabel">Choose file (.xlsx, .xls, .csv)...</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                        <span class="text-muted small">Need the template?</span>
+                        <a href="{{ url('admin/employees/sample-format') }}" class="btn btn-sm btn-link text-decoration-none">
+                            <i class="fas fa-download mr-1"></i> Download Sample Format
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4" id="btnSubmitImport">
+                        <i class="fas fa-upload mr-1"></i> Upload & Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateFileName(input) {
+    var fileName = input.files && input.files[0] ? input.files[0].name : "Choose file (.xlsx, .xls, .csv)...";
+    var label = document.getElementById('employeeImportFileLabel');
+    if (label) {
+        label.innerText = fileName;
+    }
+}
+</script>
 @endsection

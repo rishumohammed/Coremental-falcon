@@ -38,7 +38,11 @@ class SalesmanController extends \App\Http\Controllers\Controller
 
         if(!$req->export)
         {
-            $rows = $rows->orderBy('id', 'DESC')->paginate(100);
+            $perPage = (int) $req->get('per_page', 25);
+            if (!in_array($perPage, [25, 50, 100])) {
+                $perPage = 25;
+            }
+            $rows = $rows->orderBy('id', 'DESC')->paginate($perPage);
             return view('admin.salesman.attendance', compact('rows', 'salesmans'));
         }
         else

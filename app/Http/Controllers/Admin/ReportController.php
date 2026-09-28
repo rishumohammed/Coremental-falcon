@@ -147,7 +147,10 @@ class ReportController extends Controller
 
         // Paginate the array
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $perPage = 100;
+        $perPage = (int) $req->get('per_page', 25);
+        if (!in_array($perPage, [25, 50, 100])) {
+            $perPage = 25;
+        }
         $currentItems = array_slice($absent_records, $perPage * ($currentPage - 1), $perPage);
         $paginatedRows = new LengthAwarePaginator($currentItems, count($absent_records), $perPage, $currentPage, [
             'path' => LengthAwarePaginator::resolveCurrentPath(),
@@ -291,7 +294,10 @@ class ReportController extends Controller
         }
 
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $perPage = 50;
+        $perPage = (int) $req->get('per_page', 25);
+        if (!in_array($perPage, [25, 50, 100])) {
+            $perPage = 25;
+        }
         $currentItems = array_slice($records, $perPage * ($currentPage - 1), $perPage);
         $paginatedRows = new LengthAwarePaginator($currentItems, count($records), $perPage, $currentPage, [
             'path' => LengthAwarePaginator::resolveCurrentPath(),
@@ -417,7 +423,10 @@ class ReportController extends Controller
         }
 
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $perPage = 50;
+        $perPage = (int) $req->get('per_page', 25);
+        if (!in_array($perPage, [25, 50, 100])) {
+            $perPage = 25;
+        }
         $currentItems = array_slice($missingRecords, $perPage * ($currentPage - 1), $perPage);
         $paginatedRows = new LengthAwarePaginator($currentItems, count($missingRecords), $perPage, $currentPage, [
             'path' => LengthAwarePaginator::resolveCurrentPath(),
@@ -794,7 +803,10 @@ class ReportController extends Controller
 
         // Paginate
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $perPage = 100;
+        $perPage = (int) $req->get('per_page', 25);
+        if (!in_array($perPage, [25, 50, 100])) {
+            $perPage = 25;
+        }
         $currentItems = array_slice($records, $perPage * ($currentPage - 1), $perPage);
         $paginatedRows = new LengthAwarePaginator($currentItems, count($records), $perPage, $currentPage, [
             'path' => LengthAwarePaginator::resolveCurrentPath(),

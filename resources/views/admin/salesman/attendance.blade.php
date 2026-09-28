@@ -69,7 +69,7 @@
             <table class="table table-ui mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 100px;">Photo</th>
+                        <th style="width: 50px;">Photo</th>
                         <th style="width: 20%">Employee</th>
                         <th style="width: 25%">Visit Details</th>
                         <th style="width: 15%">Status</th>
@@ -83,11 +83,11 @@
                     <td>
                         @if($row->photo)
                         <a href="{{$row->photo_url}}" target="_blank">
-                            <img src="{{$row->photo_url}}" class="rounded shadow-sm" style="width:80px; height:80px; object-fit:cover; border: 2px solid #e5e7eb;" />
+                            <img src="{{$row->photo_url}}" class="rounded shadow-sm" style="width:38px; height:38px; object-fit:cover; border: 1px solid #e2e8f0;" />
                         </a>
                         @else
-                        <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:80px; height:80px; border: 1px dashed #cbd5e1;">
-                            <i class="fas fa-camera text-black-50 fa-lg"></i>
+                        <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:38px; height:38px; border: 1px dashed #cbd5e1;">
+                            <i class="fas fa-camera text-black-50" style="font-size: 0.9rem;"></i>
                         </div>
                         @endif
                     </td>
@@ -158,8 +158,23 @@
                 </tbody>
             </table>
         </div>
-        <div class="p-3 border-top">
-            {{$rows->render()}}
+        <div class="p-3 border-top d-flex flex-wrap justify-content-between align-items-center bg-light" style="gap: 12px;">
+            <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                <span class="text-muted small">
+                    Showing {{ $rows->firstItem() ?? 0 }} to {{ $rows->lastItem() ?? 0 }} of {{ $rows->total() }} entries
+                </span>
+                <div class="d-inline-flex align-items-center ml-sm-3">
+                    <label class="text-muted small mb-0 mr-2 font-weight-bold">Show:</label>
+                    <select class="custom-select custom-select-sm no-select2" style="width: auto; height: 32px; font-size: 0.85rem;" onchange="changePerPage(this.value)">
+                        <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25 rows</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 rows</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 rows</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                {{ $rows->appends(request()->all())->render() }}
+            </div>
         </div>
     </div>
 </div>

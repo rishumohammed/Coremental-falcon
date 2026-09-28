@@ -41,23 +41,17 @@
         width: 100% !important;
         max-width: 100% !important;
         display: block !important;
-    }
-    .table-responsive {
-        max-height: 70vh;
-        overflow-y: scroll;
-        overflow-x: scroll;
-        scrollbar-width: auto; /* Firefox */
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        scrollbar-width: thin; /* Firefox */
         scrollbar-color: #cbd5e1 #f1f1f1; /* Firefox */
     }
     .table-responsive table {
         white-space: nowrap;
     }
     .table-responsive table thead th {
-        position: sticky;
-        top: 0;
-        z-index: 1;
         background-color: #f8f9fa; /* Matches bg-light */
-        box-shadow: 0 1px 1px -1px rgba(0,0,0,0.4);
+        border-bottom: 2px solid #e2e8f0;
     }
     </style>
 </head>
@@ -178,6 +172,13 @@
             width:'100%'
         });
     });
+
+    function changePerPage(val) {
+        var url = new URL(window.location.href);
+        url.searchParams.set('per_page', val);
+        url.searchParams.set('page', '1');
+        window.location.href = url.toString();
+    }
     </script>
     @stack('scripts')
 </body>
