@@ -50,4 +50,16 @@ class Employee extends Model
     {
         return $this->belongsToMany(\App\User::class, 'assigned_employees', 'employee_id', 'user_id');
     }
+
+    public function getPhotoUrlAttribute()
+    {
+        if (isset($this->attributes['photo']) && !empty($this->attributes['photo'])) {
+            return asset('uploads/employee_photos/' . $this->attributes['photo']);
+        }
+        $lastAttendance = $this->attendances()->whereNotNull('photo')->where('photo', '!=', '')->latest()->first();
+        if ($lastAttendance && $lastAttendance->photo) {
+            return asset('uploads/employee_attendance/' . $lastAttendance->photo);
+        }
+        return null;
+    }
 }

@@ -127,10 +127,9 @@
     <!-- Data Table Card -->
     <div class="card-white p-0 overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-ui mb-0" style="min-width: 1400px;">
+            <table class="table table-ui mb-0" style="min-width: 1350px;">
                 <thead>
                     <tr>
-                        <th style="width: 50px;">Photo</th>
                         <th style="min-width: 200px;">Employee</th>
                         <th style="min-width: 150px;">Department</th>
                         <th style="min-width: 150px;">Division</th>
@@ -146,11 +145,6 @@
                 <tbody>
                 @foreach($rows as $row)
                 <tr>
-                    <td>
-                        <div class="rounded bg-light d-flex align-items-center justify-content-center text-muted" style="width:38px; height:38px; border: 1px dashed #cbd5e1;">
-                            <i class="fas fa-user text-black-50" style="font-size: 0.9rem;"></i>
-                        </div>
-                    </td>
                     <td>
                         <div>
                             <div class="font-weight-bold text-dark" style="font-size: 1rem;">{{$row->name}}</div>
@@ -230,7 +224,7 @@
                 @endforeach
                 @if(count($rows) == 0)
                 <tr>
-                    <td colspan="11" class="text-center py-5 text-muted">
+                    <td colspan="10" class="text-center py-5 text-muted">
                         <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
                         <h5>No employees found</h5>
                     </td>

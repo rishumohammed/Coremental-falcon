@@ -68,8 +68,8 @@ class User extends Authenticatable
         return $this->where('username', $username)->first();
     }
 
-    function getGroupIdAttribute()
+    function getGroupIdAttribute($val)
     {
-        return 'f56cd35d-7d89-4eea-8e18-9d11a59e14f8';
+        return $val ?: '7a4d51c1-8e68-4b9e-a23b-6c7f5d92a1d3';
     }
 }

@@ -7,8 +7,18 @@ function timezone()
 
 function errRes($errors)
 {
+    $msg = 'The given data was invalid';
+    if (!empty($errors) && is_array($errors)) {
+        $first = reset($errors);
+        if (is_array($first) && !empty($first)) {
+            $msg = reset($first);
+        } elseif (is_string($first)) {
+            $msg = $first;
+        }
+    }
+    
     $eres = [
-        'message'=>'The given data was invalid',
+        'message'=>$msg,
         'errors'=>[]
     ];
     

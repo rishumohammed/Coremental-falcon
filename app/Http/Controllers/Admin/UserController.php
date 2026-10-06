@@ -50,7 +50,8 @@ class UserController extends \App\Http\Controllers\Controller
     public function create()
     {
         $employees = Employee::orderBy('name')->get(['id', 'employee_id', 'name']);
-        return view('admin.users.create', compact('employees'));
+        $employee_ids = [];
+        return view('admin.users.create', compact('employees', 'employee_ids'));
     }
 
     public function store(Request $req)
@@ -94,8 +95,9 @@ class UserController extends \App\Http\Controllers\Controller
             abort(404);
 
         $employees = Employee::orderBy('name')->get(['id', 'employee_id', 'name']);
+        $employee_ids = $row->employees ? $row->employees->pluck('id')->toArray() : [];
 
-        return view('admin.users.edit', compact('row', 'employees'));
+        return view('admin.users.edit', compact('row', 'employees', 'employee_ids'));
     }
 
     public function update(Request $req, User $row)
